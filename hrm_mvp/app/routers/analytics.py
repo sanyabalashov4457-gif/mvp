@@ -26,8 +26,9 @@ def analytics_page(request: Request, db: Session = Depends(get_db)):
     status_counts = {status: count for status, count in status_rows}
 
     return templates.TemplateResponse(
-        "analytics.html",
-        {
+        request=request,
+        name="analytics.html",
+        context={
             "request": request,
             "total_applications": total,
             "avg_similarity": round(float(avg_similarity), 1),

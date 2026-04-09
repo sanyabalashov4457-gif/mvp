@@ -18,8 +18,9 @@ templates = Jinja2Templates(
 def courses_list(request: Request, db: Session = Depends(get_db)):
     courses = db.query(models.Course).order_by(models.Course.name).all()
     return templates.TemplateResponse(
-        "courses.html",
-        {
+        request=request,
+        name="courses.html",
+        context={
             "request": request,
             "courses": courses,
             "selected_course": None,
@@ -36,8 +37,9 @@ def course_detail(course_id: int, request: Request, db: Session = Depends(get_db
 
     courses = db.query(models.Course).order_by(models.Course.name).all()
     return templates.TemplateResponse(
-        "courses.html",
-        {
+        request=request,
+        name="courses.html",
+        context={
             "request": request,
             "courses": courses,
             "selected_course": course,

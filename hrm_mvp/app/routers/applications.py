@@ -17,8 +17,9 @@ templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent.parent
 def applications_list(request: Request, db: Session = Depends(get_db)):
     applications = db.query(models.Application).order_by(models.Application.created_at.desc()).all()
     return templates.TemplateResponse(
-        "applications.html",
-        {
+        request=request,
+        name="applications.html",
+        context={
             "request": request,
             "applications": applications,
             "active_page": "applications",
@@ -48,8 +49,9 @@ def application_create_form(
         comparison = compare_competencies(db, employee_id=selected_employee.id, course_id=selected_course.id)
 
     return templates.TemplateResponse(
-        "application_create.html",
-        {
+        request=request,
+        name="application_create.html",
+        context={
             "request": request,
             "employees": employees,
             "courses": courses,

@@ -18,8 +18,9 @@ templates = Jinja2Templates(
 def employees_list(request: Request, db: Session = Depends(get_db)):
     employees = db.query(models.Employee).order_by(models.Employee.full_name).all()
     return templates.TemplateResponse(
-        "employees.html",
-        {
+        request=request,
+        name="employees.html",
+        context={
             "request": request,
             "employees": employees,
             "selected_employee": None,
@@ -36,8 +37,9 @@ def employee_detail(employee_id: int, request: Request, db: Session = Depends(ge
 
     employees = db.query(models.Employee).order_by(models.Employee.full_name).all()
     return templates.TemplateResponse(
-        "employees.html",
-        {
+        request=request,
+        name="employees.html",
+        context={
             "request": request,
             "employees": employees,
             "selected_employee": employee,
