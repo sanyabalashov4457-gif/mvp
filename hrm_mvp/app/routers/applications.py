@@ -30,8 +30,8 @@ def applications_list(request: Request, db: Session = Depends(get_db)):
 @router.get("/applications/create", response_class=HTMLResponse)
 def application_create_form(
     request: Request,
-    employee_id: int | None = None,
-    course_id: int | None = None,
+    employee_id: str | None = None,
+    course_id: str | None = None,
     db: Session = Depends(get_db),
 ):
     employees = db.query(models.Employee).order_by(models.Employee.full_name).all()
@@ -41,10 +41,17 @@ def application_create_form(
     selected_course = None
     comparison = None
 
-    if employee_id:
-        selected_employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
-    if course_id:
-        selected_course = db.query(models.Course).filter(models.Course.id == course_id).first()
+    employee_id_int = int(employee_id) if employee_id and employee_id.isdigit() else None
+    course_id_int = int(course_id) if course_id and course_id.isdigit() else None
+
+    if employee_id_int:
+        selected_employee = (
+            db.query(models.Employee).filter(models.Employee.id == employee_id_int).first()
+        )
+    if course_id_int:
+        selected_course = (
+            db.query(models.Course).filter(models.Course.id == course_id_int).first()
+        )
     if selected_employee and selected_course:
         comparison = compare_competencies(db, employee_id=selected_employee.id, course_id=selected_course.id)
 
