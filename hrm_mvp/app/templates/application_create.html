@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-3">Create Training Application</h2>
+
+<div class="card mb-4">
+  <div class="card-header">1) Select employee and course</div>
+  <div class="card-body">
+    <form method="get" action="/applications/create" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Employee</label>
+        <select name="employee_id" class="form-select" onchange="this.form.submit()">
+          <option value="">Select employee</option>
+          {% for employee in employees %}
+          <option value="{{ employee.id }}" {% if selected_employee and selected_employee.id == employee.id %}selected{% endif %}>{{ employee.full_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Course</label>
+        <select name="course_id" class="form-select" onchange="this.form.submit()">
+          <option value="">Select course</option>
+          {% for course in courses %}
+          <option value="{{ course.id }}" {% if selected_course and selected_course.id == course.id %}selected{% endif %}>{{ course.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12">
+        <button class="btn btn-outline-primary" type="submit">Show comparison</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    {% if selected_employee %}
+    <div class="card mb-4">
+      <div class="card-header">Employee competencies</div>
+      <div class="card-body">
+        <p class="mb-1"><strong>{{ selected_employee.full_name }}</strong></p>
+        <p class="mb-2">Direction: {{ selected_employee.direction.name }}</p>
+        <ul class="mb-0">
+          {% for c in selected_employee.competencies %}
+          <li>{{ c.competency.name }} ({{ c.level }})</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-md-6">
+    {% if selected_course %}
+    <div class="card mb-4">
+      <div class="card-header">Course target competencies</div>
+      <div class="card-body">
+        <p class="mb-1"><strong>{{ selected_course.name }}</strong></p>
+        <p class="mb-2">{{ selected_course.description }}</p>
+        <ul class="mb-0">
+          {% for c in selected_course.competencies %}
+          <li>{{ c.competency.name }} (target: {{ c.target_level }})</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if comparison %}
+<div class="card mb-4">
+  <div class="card-header">2) Comparison result</div>
+  <div class="card-body">
+    <div class="row text-center mb-3">
+      <div class="col-md-3"><div class="metric">Similarity<br><strong>{{ comparison.similarity_percent }}%</strong></div></div>
+      <div class="col-md-3"><div class="metric">Matches<br><strong>{{ comparison.current_skill_matches }}</strong></div></div>
+      <div class="col-md-3"><div class="metric">Growth skills<br><strong>{{ comparison.growth_skills_count }}</strong></div></div>
+      <div class="col-md-3"><div class="metric">New skills<br><strong>{{ comparison.new_skills_count }}</strong></div></div>
+    </div>
+
+    <table class="table table-sm table-bordered">
+      <thead>
+        <tr>
+          <th>Competency</th>
+          <th>Employee level</th>
+          <th>Target level</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in comparison.detailed %}
+        <tr>
+          <td>{{ row.competency_name }}</td>
+          <td>{{ row.employee_level if row.employee_level is not none else '-' }}</td>
+          <td>{{ row.target_level }}</td>
+          <td>
+            {% if row.status == 'MATCH' %}
+              <span class="badge text-bg-success">MATCH</span>
+            {% elif row.status == 'GROWTH' %}
+              <span class="badge text-bg-warning">GROWTH</span>
+            {% else %}
+              <span class="badge text-bg-info">NEW</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">3) Submit application</div>
+  <div class="card-body">
+    <form method="post" action="/applications/create" class="row g-3">
+      <input type="hidden" name="employee_id" value="{{ selected_employee.id }}">
+      <input type="hidden" name="course_id" value="{{ selected_course.id }}">
+
+      <div class="col-12">
+        <label class="form-label">Goal</label>
+        <textarea name="goal_text" class="form-control" rows="3" required></textarea>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Expected result</label>
+        <textarea name="expected_result_text" class="form-control" rows="3" required></textarea>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="new">new</option>
+          <option value="approved">approved</option>
+          <option value="rejected">rejected</option>
+          <option value="in_progress">in_progress</option>
+        </select>
+      </div>
+
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Create application</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

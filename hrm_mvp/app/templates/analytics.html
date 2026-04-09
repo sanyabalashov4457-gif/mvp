@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Analytics</h2>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card text-bg-primary">
+      <div class="card-body">
+        <h6>Total applications</h6>
+        <h3>{{ total_applications }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-bg-success">
+      <div class="card-body">
+        <h6>Average similarity</h6>
+        <h3>{{ avg_similarity }}%</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h6>Statuses tracked</h6>
+        <h3>{{ status_counts|length }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Applications by status</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for status, count in status_counts.items() %}
+            <tr>
+              <td>{{ status }}</td>
+              <td>{{ count }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="2" class="text-center py-4">No data</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Status distribution</div>
+      <div class="card-body">
+        <canvas id="statusChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  const statusCounts = {{ status_counts | tojson }};
+  const labels = Object.keys(statusCounts);
+  const values = Object.values(statusCounts);
+
+  if (labels.length > 0) {
+    new Chart(document.getElementById("statusChart"), {
+      type: "pie",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            data: values,
+            backgroundColor: ["#0d6efd", "#198754", "#dc3545", "#ffc107", "#6c757d"]
+          }
+        ]
+      }
+    });
+  }
+</script>
+{% endblock %}

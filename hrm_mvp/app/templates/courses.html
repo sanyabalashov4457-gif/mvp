@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Courses</h2>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body p-0">
+    <table class="table table-striped mb-0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Format</th>
+          <th>Duration (hours)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for course in courses %}
+        <tr>
+          <td>{{ course.id }}</td>
+          <td>{{ course.name }}</td>
+          <td>{{ course.format }}</td>
+          <td>{{ course.duration_hours }}</td>
+          <td><a class="btn btn-sm btn-outline-primary" href="/courses/{{ course.id }}">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if selected_course %}
+<div class="card">
+  <div class="card-header">
+    Course detail: {{ selected_course.name }}
+  </div>
+  <div class="card-body">
+    <p>{{ selected_course.description }}</p>
+    <p class="mb-1"><strong>Format:</strong> {{ selected_course.format }}</p>
+    <p><strong>Duration:</strong> {{ selected_course.duration_hours }} hours</p>
+
+    <h5 class="mt-4">Target competencies</h5>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Competency</th>
+          <th>Target level</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for item in selected_course.competencies %}
+        <tr>
+          <td>{{ item.competency.name }}</td>
+          <td>{{ item.target_level }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
