@@ -6,6 +6,36 @@
 </div>
 
 <div class="card mb-4">
+  <div class="card-header">Добавить курс</div>
+  <div class="card-body">
+    {% if form_error %}
+    <div class="alert alert-danger">{{ form_error }}</div>
+    {% endif %}
+    <form method="post" action="/courses/create" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Название</label>
+        <input type="text" name="name" class="form-control" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Формат</label>
+        <input type="text" name="format" class="form-control" placeholder="онлайн/офлайн/гибрид" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Длительность (часы)</label>
+        <input type="number" min="1" name="duration_hours" class="form-control" required>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Описание</label>
+        <textarea name="description" class="form-control" rows="2" required></textarea>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Создать курс</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-4">
   <div class="card-body p-0">
     <table class="table table-striped mb-0">
       <thead>

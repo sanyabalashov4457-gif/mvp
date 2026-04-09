@@ -6,6 +6,33 @@
 </div>
 
 <div class="card mb-4">
+  <div class="card-header">Добавить сотрудника</div>
+  <div class="card-body">
+    <form method="post" action="/employees/create" class="row g-3">
+      <div class="col-md-5">
+        <label class="form-label">ФИО</label>
+        <input type="text" name="full_name" class="form-control" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Направление</label>
+        <select name="direction_id" class="form-select" required>
+          {% for direction in directions %}
+          <option value="{{ direction.id }}">{{ direction.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Должность</label>
+        <input type="text" name="position" class="form-control" required>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Создать сотрудника</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-4">
   <div class="card-body p-0">
     <table class="table table-striped mb-0">
       <thead>

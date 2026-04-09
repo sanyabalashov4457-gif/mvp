@@ -15,7 +15,6 @@ from app.services import (
     get_snapshot_result_label,
     get_status_label,
     to_snapshot_items,
-    compare_competencies,
 )
 
 router = APIRouter(tags=["applications"])
