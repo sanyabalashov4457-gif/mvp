@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 class="mb-4">Analytics</h2>
+<h2 class="mb-4">Аналитика</h2>
 
 <div class="row g-3 mb-4">
   <div class="col-md-4">
     <div class="card text-bg-primary">
       <div class="card-body">
-        <h6>Total applications</h6>
+        <h6>Всего заявок</h6>
         <h3>{{ total_applications }}</h3>
       </div>
     </div>
@@ -15,7 +15,7 @@
   <div class="col-md-4">
     <div class="card text-bg-success">
       <div class="card-body">
-        <h6>Average similarity</h6>
+        <h6>Среднее совпадение</h6>
         <h3>{{ avg_similarity }}%</h3>
       </div>
     </div>
@@ -23,7 +23,7 @@
   <div class="col-md-4">
     <div class="card">
       <div class="card-body">
-        <h6>Statuses tracked</h6>
+        <h6>Статусов в отчете</h6>
         <h3>{{ status_counts|length }}</h3>
       </div>
     </div>
@@ -33,23 +33,23 @@
 <div class="row g-4">
   <div class="col-md-6">
     <div class="card">
-      <div class="card-header">Applications by status</div>
+      <div class="card-header">Заявки по статусам</div>
       <div class="card-body p-0">
         <table class="table mb-0">
           <thead>
             <tr>
-              <th>Status</th>
-              <th>Count</th>
+              <th>Статус</th>
+              <th>Количество</th>
             </tr>
           </thead>
           <tbody>
           {% for status, count in status_counts.items() %}
             <tr>
-              <td>{{ status }}</td>
+              <td>{{ get_status_label(status) }}</td>
               <td>{{ count }}</td>
             </tr>
           {% else %}
-            <tr><td colspan="2" class="text-center py-4">No data</td></tr>
+            <tr><td colspan="2" class="text-center py-4">Нет данных</td></tr>
           {% endfor %}
           </tbody>
         </table>
@@ -59,7 +59,7 @@
 
   <div class="col-md-6">
     <div class="card">
-      <div class="card-header">Status distribution</div>
+      <div class="card-header">Распределение статусов</div>
       <div class="card-body">
         <canvas id="statusChart" height="180"></canvas>
       </div>
@@ -72,7 +72,13 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
   const statusCounts = {{ status_counts | tojson }};
-  const labels = Object.keys(statusCounts);
+  const statusLabelMap = {
+    new: "Новая",
+    approved: "Одобрена",
+    rejected: "Отклонена",
+    in_progress: "В процессе"
+  };
+  const labels = Object.keys(statusCounts).map((key) => statusLabelMap[key] || key);
   const values = Object.values(statusCounts);
 
   if (labels.length > 0) {

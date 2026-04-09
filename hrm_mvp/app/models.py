@@ -93,6 +93,7 @@ class Application(Base):
     current_skill_matches = Column(Integer, nullable=False)
     new_skills_count = Column(Integer, nullable=False)
     growth_skills_count = Column(Integer, nullable=False)
+    comparison_snapshot_json = Column(Text, nullable=False, default="[]")
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     employee = relationship("Employee", back_populates="applications")

@@ -1,13 +1,22 @@
+import json
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import models
 from app.db import get_db
-from app.services import compare_competencies
+from app.services import (
+    APPLICATION_STATUS_CHOICES,
+    compare_competencies,
+    get_snapshot_result_badge_class,
+    get_snapshot_result_label,
+    get_status_label,
+    to_snapshot_items,
+    compare_competencies,
+)
 
 router = APIRouter(tags=["applications"])
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent.parent / "templates"))
@@ -23,6 +32,7 @@ def applications_list(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "applications": applications,
             "active_page": "applications",
+            "get_status_label": get_status_label,
         },
     )
 
@@ -66,6 +76,10 @@ def application_create_form(
             "selected_course": selected_course,
             "comparison": comparison,
             "active_page": "applications",
+            "get_status_label": get_status_label,
+            "status_choices": APPLICATION_STATUS_CHOICES,
+            "get_snapshot_result_label": get_snapshot_result_label,
+            "get_snapshot_result_badge_class": get_snapshot_result_badge_class,
         },
     )
 
@@ -79,7 +93,10 @@ def application_create_submit(
     status: str = Form("new"),
     db: Session = Depends(get_db),
 ):
+    if status not in APPLICATION_STATUS_CHOICES:
+        status = "new"
     comparison = compare_competencies(db, employee_id=employee_id, course_id=course_id)
+    snapshot_items = to_snapshot_items(comparison["detailed"])
 
     application = models.Application(
         employee_id=employee_id,
@@ -91,7 +108,42 @@ def application_create_submit(
         current_skill_matches=comparison["current_skill_matches"],
         new_skills_count=comparison["new_skills_count"],
         growth_skills_count=comparison["growth_skills_count"],
+        comparison_snapshot_json=json.dumps(snapshot_items, ensure_ascii=False),
     )
     db.add(application)
     db.commit()
     return RedirectResponse(url="/applications", status_code=303)
+
+
+@router.get("/applications/{application_id}", response_class=HTMLResponse)
+def application_detail(application_id: int, request: Request, db: Session = Depends(get_db)):
+    application = (
+        db.query(models.Application)
+        .filter(models.Application.id == application_id)
+        .first()
+    )
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    snapshot_rows = []
+    if application.comparison_snapshot_json:
+        try:
+            parsed = json.loads(application.comparison_snapshot_json)
+            if isinstance(parsed, list):
+                snapshot_rows = parsed
+        except json.JSONDecodeError:
+            snapshot_rows = []
+
+    return templates.TemplateResponse(
+        request=request,
+        name="application_detail.html",
+        context={
+            "request": request,
+            "application": application,
+            "snapshot_rows": snapshot_rows,
+            "active_page": "applications",
+            "get_status_label": get_status_label,
+            "get_snapshot_result_label": get_snapshot_result_label,
+            "get_snapshot_result_badge_class": get_snapshot_result_badge_class,
+        },
+    )

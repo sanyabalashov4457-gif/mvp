@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h2 class="mb-0">Employees</h2>
+  <h2 class="mb-0">Сотрудники</h2>
 </div>
 
 <div class="card mb-4">
@@ -11,9 +11,9 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Full name</th>
-          <th>Direction</th>
-          <th>Position</th>
+          <th>ФИО</th>
+          <th>Направление</th>
+          <th>Должность</th>
           <th></th>
         </tr>
       </thead>
@@ -24,7 +24,7 @@
           <td>{{ employee.full_name }}</td>
           <td>{{ employee.direction.name }}</td>
           <td>{{ employee.position }}</td>
-          <td><a class="btn btn-sm btn-outline-primary" href="/employees/{{ employee.id }}">View</a></td>
+          <td><a class="btn btn-sm btn-outline-primary" href="/employees/{{ employee.id }}">Просмотр</a></td>
         </tr>
         {% endfor %}
       </tbody>
@@ -35,18 +35,18 @@
 {% if selected_employee %}
 <div class="card">
   <div class="card-header">
-    Employee detail: {{ selected_employee.full_name }}
+    Карточка сотрудника: {{ selected_employee.full_name }}
   </div>
   <div class="card-body">
-    <p class="mb-1"><strong>Direction:</strong> {{ selected_employee.direction.name }}</p>
-    <p><strong>Position:</strong> {{ selected_employee.position }}</p>
+    <p class="mb-1"><strong>Направление:</strong> {{ selected_employee.direction.name }}</p>
+    <p><strong>Должность:</strong> {{ selected_employee.position }}</p>
 
-    <h5 class="mt-4">Competencies</h5>
+    <h5 class="mt-4">Компетенции</h5>
     <table class="table table-bordered">
       <thead>
         <tr>
-          <th>Competency</th>
-          <th>Level</th>
+          <th>Компетенция</th>
+          <th>Уровень</th>
         </tr>
       </thead>
       <tbody>

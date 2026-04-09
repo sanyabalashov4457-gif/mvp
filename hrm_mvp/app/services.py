@@ -2,6 +2,60 @@ from sqlalchemy.orm import Session
 
 from app import models
 
+STATUS_LABELS_RU = {
+    "new": "Новая",
+    "approved": "Одобрена",
+    "rejected": "Отклонена",
+    "in_progress": "В процессе",
+}
+
+APPLICATION_STATUS_CHOICES = ["new", "approved", "rejected", "in_progress"]
+
+SNAPSHOT_RESULT_LABELS_RU = {
+    "match": "Совпадает",
+    "growth": "Требует развития",
+    "new": "Новый навык",
+}
+
+SNAPSHOT_RESULT_BADGE_CLASSES = {
+    "match": "text-bg-success",
+    "growth": "text-bg-warning",
+    "new": "text-bg-info",
+}
+
+
+def get_status_label(status_code: str) -> str:
+    return STATUS_LABELS_RU.get(status_code, status_code)
+
+
+def normalize_snapshot_result(status_code: str) -> str:
+    normalized = (status_code or "").strip().lower()
+    if normalized in {"match", "growth", "new"}:
+        return normalized
+    return "new"
+
+
+def get_snapshot_result_label(status_code: str) -> str:
+    normalized = normalize_snapshot_result(status_code)
+    return SNAPSHOT_RESULT_LABELS_RU.get(normalized, normalized)
+
+
+def get_snapshot_result_badge_class(status_code: str) -> str:
+    normalized = normalize_snapshot_result(status_code)
+    return SNAPSHOT_RESULT_BADGE_CLASSES.get(normalized, "text-bg-secondary")
+
+
+def to_snapshot_items(detailed_rows: list[dict]) -> list[dict]:
+    return [
+        {
+            "competency_name": row.get("competency_name"),
+            "employee_level": row.get("employee_level"),
+            "course_target_level": row.get("target_level"),
+            "status": normalize_snapshot_result(row.get("status", "")),
+        }
+        for row in detailed_rows
+    ]
+
 
 def compare_competencies(db: Session, employee_id: int, course_id: int) -> dict:
     employee_competencies = (
@@ -25,13 +79,13 @@ def compare_competencies(db: Session, employee_id: int, course_id: int) -> dict:
     for item in course_competencies:
         employee_level = employee_map.get(item.competency_id)
         if employee_level is None:
-            status = "NEW"
+            status = "new"
             new += 1
         elif employee_level >= item.target_level:
-            status = "MATCH"
+            status = "match"
             matches += 1
         else:
-            status = "GROWTH"
+            status = "growth"
             growth += 1
 
         detailed.append(

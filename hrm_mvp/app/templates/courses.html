@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h2 class="mb-0">Courses</h2>
+  <h2 class="mb-0">Курсы</h2>
 </div>
 
 <div class="card mb-4">
@@ -11,9 +11,9 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Name</th>
-          <th>Format</th>
-          <th>Duration (hours)</th>
+          <th>Название</th>
+          <th>Формат</th>
+          <th>Длительность (часы)</th>
           <th></th>
         </tr>
       </thead>
@@ -24,7 +24,7 @@
           <td>{{ course.name }}</td>
           <td>{{ course.format }}</td>
           <td>{{ course.duration_hours }}</td>
-          <td><a class="btn btn-sm btn-outline-primary" href="/courses/{{ course.id }}">View</a></td>
+          <td><a class="btn btn-sm btn-outline-primary" href="/courses/{{ course.id }}">Просмотр</a></td>
         </tr>
         {% endfor %}
       </tbody>
@@ -35,19 +35,19 @@
 {% if selected_course %}
 <div class="card">
   <div class="card-header">
-    Course detail: {{ selected_course.name }}
+    Карточка курса: {{ selected_course.name }}
   </div>
   <div class="card-body">
     <p>{{ selected_course.description }}</p>
-    <p class="mb-1"><strong>Format:</strong> {{ selected_course.format }}</p>
-    <p><strong>Duration:</strong> {{ selected_course.duration_hours }} hours</p>
+    <p class="mb-1"><strong>Формат:</strong> {{ selected_course.format }}</p>
+    <p><strong>Длительность:</strong> {{ selected_course.duration_hours }} часов</p>
 
-    <h5 class="mt-4">Target competencies</h5>
+    <h5 class="mt-4">Целевые компетенции</h5>
     <table class="table table-bordered">
       <thead>
         <tr>
-          <th>Competency</th>
-          <th>Target level</th>
+          <th>Компетенция</th>
+          <th>Требуемый уровень</th>
         </tr>
       </thead>
       <tbody>
