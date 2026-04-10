@@ -16,19 +16,19 @@ def ensure_schema_updates() -> None:
     # MVP-safe schema patch for existing databases without migrations.
     with engine.begin() as connection:
         inspector = inspect(connection)
-        if "applications" not in inspector.get_table_names():
-            return
+        table_names = set(inspector.get_table_names())
 
-        columns = {column["name"] for column in inspector.get_columns("applications")}
-        if "comparison_snapshot_json" not in columns:
-            connection.execute(
-                text(
-                    "ALTER TABLE applications "
-                    "ADD COLUMN comparison_snapshot_json TEXT NOT NULL DEFAULT '[]'"
+        if "applications" in table_names:
+            columns = {column["name"] for column in inspector.get_columns("applications")}
+            if "comparison_snapshot_json" not in columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE applications "
+                        "ADD COLUMN comparison_snapshot_json TEXT NOT NULL DEFAULT '[]'"
+                    )
                 )
-            )
 
-        if "notifications" not in inspector.get_table_names():
+        if "notifications" not in table_names:
             connection.execute(
                 text(
                     "CREATE TABLE notifications ("
@@ -36,7 +36,7 @@ def ensure_schema_updates() -> None:
                     "user_id INTEGER NULL, "
                     "message VARCHAR(255) NOT NULL, "
                     "type VARCHAR(50) NULL, "
-                    "link VARCHAR(255) NULL, "
+                    "target_url VARCHAR(255) NULL, "
                     "is_read BOOLEAN NOT NULL DEFAULT FALSE, "
                     "created_at TIMESTAMP NOT NULL DEFAULT NOW()"
                     ")"
@@ -46,10 +46,21 @@ def ensure_schema_updates() -> None:
             notification_columns = {
                 column["name"] for column in inspector.get_columns("notifications")
             }
-            if "link" not in notification_columns:
-                connection.execute(
-                    text("ALTER TABLE notifications ADD COLUMN link VARCHAR(255) NULL")
-                )
+            if "target_url" not in notification_columns:
+                if "link" in notification_columns:
+                    connection.execute(
+                        text(
+                            "ALTER TABLE notifications "
+                            "RENAME COLUMN link TO target_url"
+                        )
+                    )
+                else:
+                    connection.execute(
+                        text(
+                            "ALTER TABLE notifications "
+                            "ADD COLUMN target_url VARCHAR(255) NULL"
+                        )
+                    )
 
 
 ensure_schema_updates()
