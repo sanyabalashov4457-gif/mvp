@@ -61,16 +61,25 @@ def create_notification(
     db: Session,
     message: str,
     notification_type: str | None = None,
-    link_url: str | None = None,
+    target_url: str | None = None,
 ) -> None:
     notification = models.Notification(
         user_id=None,
         message=message,
         type=notification_type,
-        link_url=link_url,
+        target_url=target_url,
     )
     db.add(notification)
     db.commit()
+
+
+def get_notification_target_url(target_url: str | None) -> str:
+    if not target_url:
+        return "/notifications"
+    clean_target = target_url.strip()
+    if not clean_target.startswith("/"):
+        return "/notifications"
+    return clean_target
 
 
 def get_unread_notifications_count(db: Session) -> int:

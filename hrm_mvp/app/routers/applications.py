@@ -118,7 +118,7 @@ def application_create_submit(
         db,
         f"Новая заявка на обучение от {employee_name}",
         notification_type="application_created",
-        action_url=f"/applications/{application.id}",
+        target_url=f"/applications/{application.id}",
     )
     return RedirectResponse(url="/applications", status_code=303)
 
@@ -212,6 +212,6 @@ def application_edit_submit(
         db,
         f"Статус заявки изменён на {get_status_label(application.status)}",
         notification_type="application_status_updated",
-        action_url=f"/applications/{application.id}",
+        target_url=f"/applications/{application.id}",
     )
     return RedirectResponse(url=f"/applications/{application.id}", status_code=303)

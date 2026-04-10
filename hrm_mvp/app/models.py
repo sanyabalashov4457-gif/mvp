@@ -107,6 +107,6 @@ class Notification(Base):
     user_id = Column(Integer, nullable=True)
     message = Column(String(255), nullable=False)
     type = Column(String(60), nullable=True)
-    link = Column(String(255), nullable=True)
+    target_url = Column(String(255), nullable=True)
     is_read = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

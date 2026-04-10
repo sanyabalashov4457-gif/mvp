@@ -131,7 +131,7 @@ def course_create(
         db,
         message=f"Создан новый курс: {new_course.name}",
         notification_type="course_created",
-        target_url=f"/courses/{new_course.id}",
+        action_url=f"/courses/{new_course.id}",
     )
 
     return RedirectResponse(url=f"/courses/{new_course.id}", status_code=303)
