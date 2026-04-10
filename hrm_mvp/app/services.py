@@ -7,9 +7,18 @@ STATUS_LABELS_RU = {
     "approved": "Одобрена",
     "rejected": "Отклонена",
     "in_progress": "В процессе",
+    "training_completed": "Обучение завершено",
+    "training_not_completed": "Обучение не закончено",
 }
 
-APPLICATION_STATUS_CHOICES = ["new", "approved", "rejected", "in_progress"]
+APPLICATION_STATUS_CHOICES = [
+    "new",
+    "approved",
+    "rejected",
+    "in_progress",
+    "training_completed",
+    "training_not_completed",
+]
 
 SNAPSHOT_RESULT_LABELS_RU = {
     "match": "Совпадает",

@@ -76,7 +76,9 @@
     new: "Новая",
     approved: "Одобрена",
     rejected: "Отклонена",
-    in_progress: "В процессе"
+    in_progress: "В процессе",
+    training_completed: "Обучение завершено",
+    training_not_completed: "Обучение не закончено"
   };
   const labels = Object.keys(statusCounts).map((key) => statusLabelMap[key] || key);
   const values = Object.values(statusCounts);
@@ -89,7 +91,7 @@
         datasets: [
           {
             data: values,
-            backgroundColor: ["#0d6efd", "#198754", "#dc3545", "#ffc107", "#6c757d"]
+            backgroundColor: ["#0d6efd", "#198754", "#dc3545", "#ffc107", "#6c757d", "#20c997"]
           }
         ]
       }

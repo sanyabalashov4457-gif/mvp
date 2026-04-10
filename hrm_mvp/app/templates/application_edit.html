@@ -13,10 +13,12 @@
       <div class="col-md-4">
         <label class="form-label">Статус</label>
         <select name="status" class="form-select" required>
-          {% for status in status_choices %}
-          <option value="{{ status }}" {% if application.status == status %}selected{% endif %}>
-            {{ get_status_label(status) }}
-          </option>
+          <option value="new" {% if application.status == "new" %}selected{% endif %}>Новая</option>
+          <option value="approved" {% if application.status == "approved" %}selected{% endif %}>Одобрена</option>
+          <option value="rejected" {% if application.status == "rejected" %}selected{% endif %}>Отклонена</option>
+          <option value="in_progress" {% if application.status == "in_progress" %}selected{% endif %}>В процессе</option>
+          <option value="training_completed" {% if application.status == "training_completed" %}selected{% endif %}>Обучение завершено</option>
+          <option value="training_not_completed" {% if application.status == "training_not_completed" %}selected{% endif %}>Обучение не закончено</option>
           {% endfor %}
         </select>
       </div>

@@ -130,10 +130,9 @@
       <div class="col-md-4">
         <label class="form-label">Статус</label>
         <select name="status" class="form-select">
-          <option value="new">Новая</option>
-          <option value="approved">Одобрена</option>
-          <option value="rejected">Отклонена</option>
-          <option value="in_progress">В процессе</option>
+          {% for status in status_choices %}
+          <option value="{{ status }}">{{ get_status_label(status) }}</option>
+          {% endfor %}
         </select>
       </div>
 

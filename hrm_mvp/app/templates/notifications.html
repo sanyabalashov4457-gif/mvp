@@ -20,7 +20,7 @@
       {% for notification in notifications %}
         <tr class="{% if not notification.is_read %}table-warning{% endif %}">
           <td>
-            {% if notification.action_url %}
+            {% if notification.target_url %}
               <a href="/notifications/{{ notification.id }}/open">{{ notification.message }}</a>
             {% else %}
               {{ notification.message }}
@@ -35,7 +35,7 @@
             {% endif %}
           </td>
           <td class="d-flex gap-2">
-            {% if notification.action_url %}
+            {% if notification.target_url %}
             <a class="btn btn-sm btn-outline-secondary" href="/notifications/{{ notification.id }}/open">Перейти</a>
             {% endif %}
             {% if not notification.is_read %}
