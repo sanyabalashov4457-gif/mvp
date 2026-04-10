@@ -140,7 +140,8 @@ EMBED_MODEL=nomic-embed-text
 
 Дополнительно:
 
-- `ASK_TIMEOUT_SECONDS` (по умолчанию `10`, таймаут embedding запроса)
+- `ASK_TIMEOUT_SECONDS` (legacy fallback, если не заданы отдельные таймауты)
+- `QUERY_EMBED_TIMEOUT_SECONDS` (по умолчанию `10`, таймаут embedding запроса)
 - `GENERATE_TIMEOUT_SECONDS` (по умолчанию `60`, таймаут генерации ответа)
 - `INGEST_TIMEOUT_SECONDS` (по умолчанию `60`)
 

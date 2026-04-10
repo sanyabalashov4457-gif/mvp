@@ -19,7 +19,12 @@ class Settings:
     db_dir: Path = BASE_DIR / "db"
     chroma_collection: str = os.getenv("CHROMA_COLLECTION", "api_docs")
     ask_timeout_seconds: int = int(os.getenv("ASK_TIMEOUT_SECONDS", "10"))
-    query_timeout_seconds: int = int(os.getenv("QUERY_TIMEOUT_SECONDS", os.getenv("ASK_TIMEOUT_SECONDS", "10")))
+    query_timeout_seconds: int = int(
+        os.getenv(
+            "QUERY_TIMEOUT_SECONDS",
+            os.getenv("QUERY_EMBED_TIMEOUT_SECONDS", os.getenv("ASK_TIMEOUT_SECONDS", "10")),
+        )
+    )
     generate_timeout_seconds: int = int(
         os.getenv("GENERATE_TIMEOUT_SECONDS", os.getenv("ASK_TIMEOUT_SECONDS", "10"))
     )
