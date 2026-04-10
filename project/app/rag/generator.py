@@ -45,18 +45,10 @@ def _build_prompt(question: str, context: List[dict]) -> str:
 def generate_answer(question: str, context: List[dict]) -> Dict[str, Any]:
     prompt = _build_prompt(question=question, context=context)
     try:
-        payload = post_json(
-            endpoint="/api/generate",
-            payload={
-                "model": settings.model_name,
-                "prompt": prompt,
-                "stream": False,
-            },
-            timeout=settings.ask_timeout_seconds,
-        )
+        answer_text = generate_text(prompt=prompt, timeout=settings.generate_timeout_seconds)
     except OllamaConnectionError:
         raise
-    answer = payload.get("response", "").strip()
+    answer = answer_text.strip()
     logger.info("Model answer generated: %s", answer[:500])
 
     return {

@@ -128,7 +128,7 @@ curl -X POST "http://127.0.0.1:8000/ask" \
 }
 ```
 
-Сервис возвращает JSON и рассчитан на быстрый ответ (таймаут вызова генерации по умолчанию `10` сек через `ASK_TIMEOUT_SECONDS=10`).
+Сервис возвращает JSON. Для локальной модели `llama3` рекомендуем увеличить таймаут генерации (по умолчанию `GENERATE_TIMEOUT_SECONDS=60`).
 
 ## Конфигурация (.env)
 
@@ -140,6 +140,7 @@ EMBED_MODEL=nomic-embed-text
 
 Дополнительно:
 
-- `ASK_TIMEOUT_SECONDS` (по умолчанию `10`)
+- `ASK_TIMEOUT_SECONDS` (по умолчанию `10`, таймаут embedding запроса)
+- `GENERATE_TIMEOUT_SECONDS` (по умолчанию `60`, таймаут генерации ответа)
 - `INGEST_TIMEOUT_SECONDS` (по умолчанию `60`)
 
