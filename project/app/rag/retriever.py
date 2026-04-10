@@ -5,19 +5,23 @@ import chromadb
 import requests
 
 from app.config import settings
+from app.rag.ollama_client import OllamaConnectionError
 
 
 logger = logging.getLogger(__name__)
 
 
 def _embed_query(query: str) -> List[float]:
-    response = requests.post(
-        f"{settings.ollama_url}/api/embeddings",
-        json={"model": settings.embed_model, "prompt": query},
-        timeout=settings.ask_timeout_seconds,
-    )
-    response.raise_for_status()
-    payload = response.json()
+    try:
+        response = requests.post(
+            f"{settings.ollama_url}/api/embeddings",
+            json={"model": settings.embed_model, "prompt": query},
+            timeout=settings.ask_timeout_seconds,
+        )
+        response.raise_for_status()
+        payload = response.json()
+    except requests.RequestException as exc:
+        raise OllamaConnectionError.from_exception(settings.ollama_url, exc) from exc
     return payload["embedding"]
 
 

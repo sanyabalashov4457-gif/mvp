@@ -2,25 +2,14 @@ import logging
 from typing import List
 
 import chromadb
-import requests
 
 from app.config import settings
+from app.rag.ollama_client import OllamaConnectionError, embed_text
 from app.utils.pdf_loader import load_pdf_documents
 from app.utils.text_splitter import split_text
 
 
 logger = logging.getLogger(__name__)
-
-
-def _embedding_from_ollama(text: str) -> List[float]:
-    response = requests.post(
-        f"{settings.ollama_url}/api/embeddings",
-        json={"model": settings.embed_model, "prompt": text},
-        timeout=settings.ingest_timeout_seconds,
-    )
-    response.raise_for_status()
-    data = response.json()
-    return data["embedding"]
 
 
 def ingest_documents() -> int:
@@ -56,7 +45,11 @@ def ingest_documents() -> int:
             ids.append(chunk_id)
             documents.append(chunk)
             metadatas.append({"page": page_number})
-            embeddings.append(_embedding_from_ollama(chunk))
+            try:
+                embeddings.append(embed_text(chunk))
+            except OllamaConnectionError as exc:
+                logger.error("%s", exc)
+                raise RuntimeError(str(exc)) from exc
 
     if ids:
         collection.add(ids=ids, documents=documents, metadatas=metadatas, embeddings=embeddings)

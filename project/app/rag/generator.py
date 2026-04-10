@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 import requests
 
 from app.config import settings
+from app.rag.ollama_client import OllamaUnavailableError
 
 
 logger = logging.getLogger(__name__)
@@ -46,15 +47,18 @@ def _build_prompt(question: str, context: List[dict]) -> str:
 def generate_answer(question: str, context: List[dict]) -> Dict[str, Any]:
     prompt = _build_prompt(question=question, context=context)
 
-    response = requests.post(
-        f"{settings.ollama_url}/api/generate",
-        json={
-            "model": settings.model_name,
-            "prompt": prompt,
-            "stream": False,
-        },
-        timeout=settings.ask_timeout_seconds,
-    )
+    try:
+        response = requests.post(
+            f"{settings.ollama_url}/api/generate",
+            json={
+                "model": settings.model_name,
+                "prompt": prompt,
+                "stream": False,
+            },
+            timeout=settings.ask_timeout_seconds,
+        )
+    except requests.exceptions.ConnectionError as exc:
+        raise OllamaUnavailableError() from exc
     response.raise_for_status()
     payload = response.json()
     answer = payload.get("response", "").strip()

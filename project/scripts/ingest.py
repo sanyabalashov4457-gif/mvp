@@ -9,4 +9,9 @@ from app.rag.ingest import ingest_documents
 
 
 if __name__ == "__main__":
-    ingest_documents()
+    try:
+        total_chunks = ingest_documents()
+        print(f"Indexed chunks: {total_chunks}")
+    except RuntimeError as exc:
+        print(f"Ingest failed: {exc}")
+        raise SystemExit(1) from exc

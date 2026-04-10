@@ -23,6 +23,29 @@ pip install -r requirements.txt
 
 Проверьте, что сервис Ollama запущен локально на `http://localhost:11434`.
 
+### macOS (быстрый путь)
+
+Если команда `ollama` не найдена:
+
+```bash
+brew install ollama
+```
+
+Запустите фоновый сервис:
+
+```bash
+brew services start ollama
+```
+
+Проверка:
+
+```bash
+ollama --version
+curl http://localhost:11434/api/tags
+```
+
+Альтернатива: установить Ollama.app и запустить приложение вручную.
+
 ## 3) Скачивание моделей
 
 ```bash
@@ -44,6 +67,8 @@ project/data/docs/
 python scripts/ingest.py
 ```
 
+Если Ollama не установлен или не запущен, скрипт выведет понятную ошибку с инструкцией.
+
 Что происходит:
 
 - читаются все PDF из `data/docs`
@@ -56,6 +81,8 @@ python scripts/ingest.py
 ```bash
 uvicorn app.main:app --reload
 ```
+
+Если Ollama недоступен, `POST /ask` вернет `503 Service Unavailable` с диагностикой.
 
 API поднимется на:
 
@@ -113,6 +140,6 @@ EMBED_MODEL=nomic-embed-text
 
 Дополнительно:
 
-- `ASK_TIMEOUT_SECONDS` (по умолчанию `9`)
+- `ASK_TIMEOUT_SECONDS` (по умолчанию `10`)
 - `INGEST_TIMEOUT_SECONDS` (по умолчанию `60`)
 
