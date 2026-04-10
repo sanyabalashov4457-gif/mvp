@@ -57,6 +57,24 @@ def to_snapshot_items(detailed_rows: list[dict]) -> list[dict]:
     ]
 
 
+def create_notification(db: Session, message: str, notification_type: str | None = None) -> None:
+    notification = models.Notification(
+        user_id=None,
+        message=message,
+        type=notification_type,
+    )
+    db.add(notification)
+    db.commit()
+
+
+def get_unread_notifications_count(db: Session) -> int:
+    return (
+        db.query(models.Notification)
+        .filter(models.Notification.is_read.is_(False))
+        .count()
+    )
+
+
 def compare_competencies(db: Session, employee_id: int, course_id: int) -> dict:
     employee_competencies = (
         db.query(models.EmployeeCompetency)

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.db import get_db
+from app.services import create_notification
 
 router = APIRouter(tags=["courses"])
 templates = Jinja2Templates(
@@ -76,8 +77,8 @@ def course_create(
     description: str = Form(...),
     format: str = Form(...),
     duration_hours: int = Form(...),
-    competency_ids: list[int] = Form(default=[]),
-    target_levels: list[int] = Form(default=[]),
+    competency_ids: list[str] = Form(default=[]),
+    target_levels: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
 ):
     name = name.strip()
@@ -105,7 +106,15 @@ def course_create(
     db.flush()
 
     seen_competencies: set[int] = set()
-    for competency_id, target_level in _parse_course_competencies_form(request):
+    for competency_id_raw, target_level_raw in zip(competency_ids, target_levels):
+        if not competency_id_raw or not target_level_raw:
+            continue
+        if not competency_id_raw.isdigit() or not target_level_raw.isdigit():
+            continue
+        competency_id = int(competency_id_raw)
+        target_level = int(target_level_raw)
+        if target_level < 1 or target_level > 5:
+            continue
         if competency_id in seen_competencies:
             continue
         seen_competencies.add(competency_id)
@@ -118,5 +127,6 @@ def course_create(
         )
 
     db.commit()
+    create_notification(db, f"Создан новый курс: {new_course.name}")
 
     return RedirectResponse(url=f"/courses/{new_course.id}", status_code=303)

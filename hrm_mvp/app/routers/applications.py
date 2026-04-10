@@ -11,6 +11,7 @@ from app.db import get_db
 from app.services import (
     APPLICATION_STATUS_CHOICES,
     compare_competencies,
+    create_notification,
     get_snapshot_result_badge_class,
     get_snapshot_result_label,
     get_status_label,
@@ -111,6 +112,9 @@ def application_create_submit(
     )
     db.add(application)
     db.commit()
+    employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
+    employee_name = employee.full_name if employee else "сотрудник"
+    create_notification(db, f"Новая заявка на обучение от {employee_name}")
     return RedirectResponse(url="/applications", status_code=303)
 
 
@@ -199,4 +203,5 @@ def application_edit_submit(
         application.expected_result_text = expected_result_clean
 
     db.commit()
+    create_notification(db, f"Статус заявки изменён на {get_status_label(application.status)}")
     return RedirectResponse(url=f"/applications/{application.id}", status_code=303)

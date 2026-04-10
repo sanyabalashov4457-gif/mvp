@@ -6,7 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import inspect, text
 
 from app.db import Base, engine
-from app.routers import analytics, applications, courses, employees
+from app.routers import analytics, applications, courses, employees, notifications
+from app.template_context import inject_global_template_context
 
 Base.metadata.create_all(bind=engine)
 
@@ -27,6 +28,20 @@ def ensure_schema_updates() -> None:
                 )
             )
 
+        if "notifications" not in inspector.get_table_names():
+            connection.execute(
+                text(
+                    "CREATE TABLE notifications ("
+                    "id SERIAL PRIMARY KEY, "
+                    "user_id INTEGER NULL, "
+                    "message VARCHAR(255) NOT NULL, "
+                    "type VARCHAR(50) NULL, "
+                    "is_read BOOLEAN NOT NULL DEFAULT FALSE, "
+                    "created_at TIMESTAMP NOT NULL DEFAULT NOW()"
+                    ")"
+                )
+            )
+
 
 ensure_schema_updates()
 
@@ -36,11 +51,13 @@ app.mount(
     StaticFiles(directory=str(Path(__file__).resolve().parent / "static")),
     name="static",
 )
+app.middleware("http")(inject_global_template_context)
 
 app.include_router(employees.router)
 app.include_router(courses.router)
 app.include_router(applications.router)
 app.include_router(analytics.router)
+app.include_router(notifications.router)
 
 
 @app.get("/")

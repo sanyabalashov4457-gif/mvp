@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.db import get_db
+from app.services import create_notification
 
 router = APIRouter(tags=["employees"])
 templates = Jinja2Templates(
@@ -95,4 +96,5 @@ def employee_create(
         )
 
     db.commit()
+    create_notification(db, f"Создан новый сотрудник: {employee.full_name}")
     return RedirectResponse(url=f"/employees/{employee.id}", status_code=303)

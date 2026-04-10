@@ -19,6 +19,7 @@
       <a class="nav-link {% if active_page == 'courses' %}active{% endif %}" href="/courses">Курсы</a>
       <a class="nav-link {% if active_page == 'applications' %}active{% endif %}" href="/applications">Заявки на обучение</a>
       <a class="nav-link {% if active_page == 'analytics' %}active{% endif %}" href="/analytics">Аналитика</a>
+      <a class="nav-link {% if active_page == 'notifications' %}active{% endif %}" href="/notifications">🔔 Уведомления{% if unread_notifications_count %} <span class="badge text-bg-danger">{{ unread_notifications_count }}</span>{% endif %}</a>
     </div>
   </div>
 </nav>
