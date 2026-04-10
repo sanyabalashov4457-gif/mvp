@@ -5,6 +5,13 @@
   <h2 class="mb-0">Сотрудники</h2>
 </div>
 
+{% if page_error %}
+<div class="alert alert-danger">{{ page_error }}</div>
+{% endif %}
+{% if page_success %}
+<div class="alert alert-success">{{ page_success }}</div>
+{% endif %}
+
 <div class="card mb-4">
   <div class="card-header">Добавить сотрудника</div>
   <div class="card-body">
@@ -60,7 +67,7 @@
           <th>ФИО</th>
           <th>Направление</th>
           <th>Должность</th>
-          <th></th>
+          <th>Действия</th>
         </tr>
       </thead>
       <tbody>
@@ -70,7 +77,13 @@
           <td>{{ employee.full_name }}</td>
           <td>{{ employee.direction.name }}</td>
           <td>{{ employee.position }}</td>
-          <td><a class="btn btn-sm btn-outline-primary" href="/employees/{{ employee.id }}">Просмотр</a></td>
+          <td class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-primary" href="/employees/{{ employee.id }}">Просмотр</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/employees/{{ employee.id }}/edit">Редактировать</a>
+            <form method="post" action="/employees/{{ employee.id }}/delete" onsubmit="return confirm('Удалить сотрудника?');">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+            </form>
+          </td>
         </tr>
         {% endfor %}
       </tbody>

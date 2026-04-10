@@ -3,8 +3,18 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2 class="mb-0">Карточка сотрудника</h2>
-  <a class="btn btn-outline-secondary" href="/employees">К списку сотрудников</a>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="/employees">К списку сотрудников</a>
+    <a class="btn btn-outline-primary" href="/employees/{{ employee.id }}/edit">Редактировать</a>
+    <form method="post" action="/employees/{{ employee.id }}/delete" onsubmit="return confirm('Удалить сотрудника?');">
+      <button type="submit" class="btn btn-outline-danger">Удалить</button>
+    </form>
+  </div>
 </div>
+
+{% if page_error %}
+<div class="alert alert-danger">{{ page_error }}</div>
+{% endif %}
 
 <div class="card mb-4">
   <div class="card-header">Основная информация</div>

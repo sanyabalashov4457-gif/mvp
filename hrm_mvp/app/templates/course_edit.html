@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Редактирование курса #{{ course.id }}</h2>
+  <a class="btn btn-outline-secondary" href="/courses/{{ course.id }}">Назад к карточке</a>
+</div>
+
+<div class="card">
+  <div class="card-header">Обновить данные курса</div>
+  <div class="card-body">
+    {% if form_error %}
+    <div class="alert alert-danger">{{ form_error }}</div>
+    {% endif %}
+    <form method="post" action="/courses/{{ course.id }}/edit" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Название</label>
+        <input type="text" name="name" class="form-control" value="{{ course.name }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Формат</label>
+        <input type="text" name="format" class="form-control" value="{{ course.format }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Длительность (часы)</label>
+        <input type="number" min="1" name="duration_hours" class="form-control" value="{{ course.duration_hours }}" required>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Описание</label>
+        <textarea name="description" class="form-control" rows="3" required>{{ course.description }}</textarea>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Компетенции курса</label>
+      </div>
+      {% for row in competency_rows %}
+      <div class="col-md-7">
+        <select name="competency_ids" class="form-select">
+          <option value="">Выберите компетенцию</option>
+          {% for competency in competencies %}
+          <option
+            value="{{ competency.id }}"
+            {% if row.competency_id and row.competency_id == competency.id %}selected{% endif %}
+          >
+            {{ competency.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-5">
+        <input
+          type="number"
+          min="1"
+          max="5"
+          name="target_levels"
+          class="form-control"
+          value="{{ row.target_level }}"
+          placeholder="Целевой уровень 1-5"
+        >
+      </div>
+      {% endfor %}
+
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

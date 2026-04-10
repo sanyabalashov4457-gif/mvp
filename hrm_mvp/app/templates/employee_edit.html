@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Редактирование сотрудника #{{ employee.id }}</h2>
+  <a class="btn btn-outline-secondary" href="/employees/{{ employee.id }}">Назад к карточке</a>
+</div>
+
+<div class="card">
+  <div class="card-header">Обновить данные сотрудника</div>
+  <div class="card-body">
+    {% if form_error %}
+    <div class="alert alert-danger">{{ form_error }}</div>
+    {% endif %}
+    <form method="post" action="/employees/{{ employee.id }}/edit" class="row g-3">
+      <div class="col-md-5">
+        <label class="form-label">ФИО</label>
+        <input type="text" name="full_name" class="form-control" value="{{ employee.full_name }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Направление</label>
+        <select name="direction_id" class="form-select" required>
+          {% for direction in directions %}
+          <option value="{{ direction.id }}" {% if employee.direction_id == direction.id %}selected{% endif %}>
+            {{ direction.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Должность</label>
+        <input type="text" name="position" class="form-control" value="{{ employee.position }}" required>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Компетенции сотрудника</label>
+      </div>
+      {% for row in competency_rows %}
+      <div class="col-md-6">
+        <select name="competency_id" class="form-select">
+          <option value="">Выберите компетенцию</option>
+          {% for competency in competencies %}
+          <option value="{{ competency.id }}" {% if row.competency_id == competency.id %}selected{% endif %}>
+            {{ competency.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input
+          type="number"
+          min="1"
+          max="5"
+          name="competency_level"
+          class="form-control"
+          placeholder="Уровень 1-5"
+          value="{{ row.level }}"
+        >
+      </div>
+      {% endfor %}
+
+      <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        <a class="btn btn-outline-secondary" href="/employees/{{ employee.id }}">Отмена</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
