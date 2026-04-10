@@ -8,9 +8,6 @@
 <div class="card mb-4">
   <div class="card-header">Добавить курс</div>
   <div class="card-body">
-    {% if form_error %}
-    <div class="alert alert-danger">{{ form_error }}</div>
-    {% endif %}
     <form method="post" action="/courses/create" class="row g-3">
       <div class="col-md-6">
         <label class="form-label">Название</label>
@@ -28,6 +25,24 @@
         <label class="form-label">Описание</label>
         <textarea name="description" class="form-control" rows="2" required></textarea>
       </div>
+
+      <div class="col-12">
+        <label class="form-label">Компетенции курса</label>
+      </div>
+      {% for i in range(1, 4) %}
+      <div class="col-md-7">
+        <select name="competency_id" class="form-select">
+          <option value="">Выберите компетенцию (опционально)</option>
+          {% for competency in competencies %}
+          <option value="{{ competency.id }}">{{ competency.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-5">
+        <input type="number" min="1" max="5" name="target_level" class="form-control" placeholder="Целевой уровень 1-5">
+      </div>
+      {% endfor %}
+
       <div class="col-12">
         <button type="submit" class="btn btn-primary">Создать курс</button>
       </div>
@@ -54,42 +69,11 @@
           <td>{{ course.name }}</td>
           <td>{{ course.format }}</td>
           <td>{{ course.duration_hours }}</td>
-          <td><a class="btn btn-sm btn-outline-primary" href="/courses/{{ course.id }}">Просмотр</a></td>
+          <td><a class="btn btn-sm btn-outline-primary" href="/courses/{{ course.id }}">Открыть</a></td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
-
-{% if selected_course %}
-<div class="card">
-  <div class="card-header">
-    Карточка курса: {{ selected_course.name }}
-  </div>
-  <div class="card-body">
-    <p>{{ selected_course.description }}</p>
-    <p class="mb-1"><strong>Формат:</strong> {{ selected_course.format }}</p>
-    <p><strong>Длительность:</strong> {{ selected_course.duration_hours }} часов</p>
-
-    <h5 class="mt-4">Целевые компетенции</h5>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>Компетенция</th>
-          <th>Требуемый уровень</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for item in selected_course.competencies %}
-        <tr>
-          <td>{{ item.competency.name }}</td>
-          <td>{{ item.target_level }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
-{% endif %}
 {% endblock %}

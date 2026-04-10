@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Редактирование заявки #{{ application.id }}</h2>
+  <a class="btn btn-outline-secondary" href="/applications/{{ application.id }}">Назад к заявке</a>
+</div>
+
+<div class="card">
+  <div class="card-header">Обновить данные заявки</div>
+  <div class="card-body">
+    <form method="post" action="/applications/{{ application.id }}/edit" class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Статус</label>
+        <select name="status" class="form-select" required>
+          {% for status in status_choices %}
+          <option value="{{ status }}" {% if application.status == status %}selected{% endif %}>
+            {{ get_status_label(status) }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Цель обучения</label>
+        <textarea name="goal_text" class="form-control" rows="3">{{ application.goal_text }}</textarea>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Ожидаемый результат</label>
+        <textarea name="expected_result_text" class="form-control" rows="3">{{ application.expected_result_text }}</textarea>
+      </div>
+
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

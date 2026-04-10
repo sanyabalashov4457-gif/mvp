@@ -146,3 +146,57 @@ def application_detail(application_id: int, request: Request, db: Session = Depe
             "get_snapshot_result_badge_class": get_snapshot_result_badge_class,
         },
     )
+
+
+@router.get("/applications/{application_id}/edit", response_class=HTMLResponse)
+def application_edit_form(application_id: int, request: Request, db: Session = Depends(get_db)):
+    application = (
+        db.query(models.Application)
+        .filter(models.Application.id == application_id)
+        .first()
+    )
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="application_edit.html",
+        context={
+            "request": request,
+            "application": application,
+            "status_choices": APPLICATION_STATUS_CHOICES,
+            "get_status_label": get_status_label,
+            "active_page": "applications",
+        },
+    )
+
+
+@router.post("/applications/{application_id}/edit")
+def application_edit_submit(
+    application_id: int,
+    status: str = Form(...),
+    goal_text: str = Form(""),
+    expected_result_text: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    application = (
+        db.query(models.Application)
+        .filter(models.Application.id == application_id)
+        .first()
+    )
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    if status in APPLICATION_STATUS_CHOICES:
+        application.status = status
+
+    goal_text_clean = goal_text.strip()
+    expected_result_clean = expected_result_text.strip()
+
+    if goal_text_clean:
+        application.goal_text = goal_text_clean
+    if expected_result_clean:
+        application.expected_result_text = expected_result_clean
+
+    db.commit()
+    return RedirectResponse(url=f"/applications/{application.id}", status_code=303)

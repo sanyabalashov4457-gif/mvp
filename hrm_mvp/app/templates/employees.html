@@ -8,6 +8,9 @@
 <div class="card mb-4">
   <div class="card-header">Добавить сотрудника</div>
   <div class="card-body">
+    {% if form_error %}
+    <div class="alert alert-danger">{{ form_error }}</div>
+    {% endif %}
     <form method="post" action="/employees/create" class="row g-3">
       <div class="col-md-5">
         <label class="form-label">ФИО</label>
@@ -25,6 +28,22 @@
         <label class="form-label">Должность</label>
         <input type="text" name="position" class="form-control" required>
       </div>
+      <div class="col-12">
+        <label class="form-label">Компетенции сотрудника</label>
+      </div>
+      {% for idx in range(3) %}
+      <div class="col-md-6">
+        <select name="competency_id" class="form-select">
+          <option value="">Выберите компетенцию</option>
+          {% for competency in competencies %}
+          <option value="{{ competency.id }}">{{ competency.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="number" min="1" max="5" name="competency_level" class="form-control" placeholder="Уровень 1-5">
+      </div>
+      {% endfor %}
       <div class="col-12">
         <button type="submit" class="btn btn-primary">Создать сотрудника</button>
       </div>
@@ -58,34 +77,4 @@
     </table>
   </div>
 </div>
-
-{% if selected_employee %}
-<div class="card">
-  <div class="card-header">
-    Карточка сотрудника: {{ selected_employee.full_name }}
-  </div>
-  <div class="card-body">
-    <p class="mb-1"><strong>Направление:</strong> {{ selected_employee.direction.name }}</p>
-    <p><strong>Должность:</strong> {{ selected_employee.position }}</p>
-
-    <h5 class="mt-4">Компетенции</h5>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>Компетенция</th>
-          <th>Уровень</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for item in selected_employee.competencies %}
-        <tr>
-          <td>{{ item.competency.name }}</td>
-          <td>{{ item.level }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
-{% endif %}
 {% endblock %}
