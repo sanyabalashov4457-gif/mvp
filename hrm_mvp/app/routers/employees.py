@@ -96,5 +96,10 @@ def employee_create(
         )
 
     db.commit()
-    create_notification(db, f"Создан новый сотрудник: {employee.full_name}")
+    create_notification(
+        db,
+        f"Создан новый сотрудник: {employee.full_name}",
+        notification_type="employee_created",
+        action_url=f"/employees/{employee.id}",
+    )
     return RedirectResponse(url=f"/employees/{employee.id}", status_code=303)

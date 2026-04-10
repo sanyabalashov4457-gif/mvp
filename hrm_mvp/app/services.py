@@ -57,11 +57,17 @@ def to_snapshot_items(detailed_rows: list[dict]) -> list[dict]:
     ]
 
 
-def create_notification(db: Session, message: str, notification_type: str | None = None) -> None:
+def create_notification(
+    db: Session,
+    message: str,
+    notification_type: str | None = None,
+    link_url: str | None = None,
+) -> None:
     notification = models.Notification(
         user_id=None,
         message=message,
         type=notification_type,
+        link_url=link_url,
     )
     db.add(notification)
     db.commit()

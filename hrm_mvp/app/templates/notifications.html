@@ -13,13 +13,19 @@
           <th>Сообщение</th>
           <th>Дата</th>
           <th>Статус</th>
-          <th></th>
+          <th>Действие</th>
         </tr>
       </thead>
       <tbody>
       {% for notification in notifications %}
         <tr class="{% if not notification.is_read %}table-warning{% endif %}">
-          <td>{{ notification.message }}</td>
+          <td>
+            {% if notification.action_url %}
+              <a href="/notifications/{{ notification.id }}/open">{{ notification.message }}</a>
+            {% else %}
+              {{ notification.message }}
+            {% endif %}
+          </td>
           <td>{{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
           <td>
             {% if notification.is_read %}
@@ -28,7 +34,10 @@
               <span class="badge text-bg-primary">Новое</span>
             {% endif %}
           </td>
-          <td>
+          <td class="d-flex gap-2">
+            {% if notification.action_url %}
+            <a class="btn btn-sm btn-outline-secondary" href="/notifications/{{ notification.id }}/open">Перейти</a>
+            {% endif %}
             {% if not notification.is_read %}
             <form method="post" action="/notifications/{{ notification.id }}/read">
               <button type="submit" class="btn btn-sm btn-outline-primary">Отметить как прочитанное</button>

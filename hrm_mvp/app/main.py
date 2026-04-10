@@ -36,11 +36,20 @@ def ensure_schema_updates() -> None:
                     "user_id INTEGER NULL, "
                     "message VARCHAR(255) NOT NULL, "
                     "type VARCHAR(50) NULL, "
+                    "target_url VARCHAR(255) NULL, "
                     "is_read BOOLEAN NOT NULL DEFAULT FALSE, "
                     "created_at TIMESTAMP NOT NULL DEFAULT NOW()"
                     ")"
                 )
             )
+        else:
+            notification_columns = {
+                column["name"] for column in inspector.get_columns("notifications")
+            }
+            if "target_url" not in notification_columns:
+                connection.execute(
+                    text("ALTER TABLE notifications ADD COLUMN target_url VARCHAR(255) NULL")
+                )
 
 
 ensure_schema_updates()

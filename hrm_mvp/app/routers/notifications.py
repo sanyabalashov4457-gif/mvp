@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.db import get_db
+from app.services import get_notification_target_url
 
 router = APIRouter(tags=["notifications"])
 templates = Jinja2Templates(
@@ -45,3 +46,20 @@ def notifications_mark_read(notification_id: int, db: Session = Depends(get_db))
     notification.is_read = True
     db.commit()
     return RedirectResponse(url="/notifications", status_code=303)
+
+
+@router.get("/notifications/{notification_id}/open")
+def notifications_open(notification_id: int, db: Session = Depends(get_db)):
+    notification = (
+        db.query(models.Notification)
+        .filter(models.Notification.id == notification_id)
+        .first()
+    )
+    if not notification:
+        raise HTTPException(status_code=404, detail="Notification not found")
+
+    notification.is_read = True
+    db.commit()
+
+    target_url = get_notification_target_url(notification.target_url)
+    return RedirectResponse(url=target_url, status_code=303)

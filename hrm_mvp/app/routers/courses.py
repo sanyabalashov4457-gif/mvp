@@ -127,6 +127,11 @@ def course_create(
         )
 
     db.commit()
-    create_notification(db, f"Создан новый курс: {new_course.name}")
+    create_notification(
+        db,
+        message=f"Создан новый курс: {new_course.name}",
+        notification_type="course_created",
+        target_url=f"/courses/{new_course.id}",
+    )
 
     return RedirectResponse(url=f"/courses/{new_course.id}", status_code=303)

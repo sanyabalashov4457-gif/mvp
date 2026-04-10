@@ -14,12 +14,19 @@
       <a class="navbar-brand d-block" href="/applications">HRM MVP</a>
       <small class="text-white-50">Прототип контура управления обучением персонала АО «Группа Илим»</small>
     </div>
-    <div class="navbar-nav">
+    <div class="navbar-nav align-items-center">
       <a class="nav-link {% if active_page == 'employees' %}active{% endif %}" href="/employees">Сотрудники</a>
       <a class="nav-link {% if active_page == 'courses' %}active{% endif %}" href="/courses">Курсы</a>
       <a class="nav-link {% if active_page == 'applications' %}active{% endif %}" href="/applications">Заявки на обучение</a>
       <a class="nav-link {% if active_page == 'analytics' %}active{% endif %}" href="/analytics">Аналитика</a>
-      <a class="nav-link {% if active_page == 'notifications' %}active{% endif %}" href="/notifications">🔔 Уведомления{% if unread_notifications_count %} <span class="badge text-bg-danger">{{ unread_notifications_count }}</span>{% endif %}</a>
+      <a
+        class="nav-link d-flex align-items-center gap-1 {% if active_page == 'notifications' %}active{% endif %}"
+        href="/notifications"
+        title="Уведомления"
+      >
+        <span class="text-secondary bell-icon">🔔</span>
+        <span class="text-white">{{ unread_notifications_count }}</span>
+      </a>
     </div>
   </div>
 </nav>
