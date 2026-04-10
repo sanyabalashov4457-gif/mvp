@@ -68,11 +68,30 @@ def _resolve_competency_inputs(
     indexed_competency_ids: list[str],
     indexed_target_levels: list[str],
 ) -> tuple[list[str], list[str]]:
-    if raw_competency_ids or raw_target_levels:
-        return raw_competency_ids, raw_target_levels
-    if fallback_competency_ids or fallback_target_levels:
-        return fallback_competency_ids, fallback_target_levels
-    return indexed_competency_ids, indexed_target_levels
+    candidates = [
+        (raw_competency_ids, raw_target_levels),
+        (fallback_competency_ids, fallback_target_levels),
+        (indexed_competency_ids, indexed_target_levels),
+    ]
+
+    def score(pair: tuple[list[str], list[str]]) -> int:
+        competencies, levels = pair
+        normalized_competencies = [value.strip() for value in competencies]
+        normalized_levels = [value.strip() for value in levels]
+        return sum(
+            1
+            for competency_raw, level_raw in zip(
+                normalized_competencies,
+                normalized_levels,
+            )
+            if competency_raw and level_raw
+        )
+
+    best_competencies, best_levels = max(candidates, key=score)
+    return (
+        [value.strip() for value in best_competencies],
+        [value.strip() for value in best_levels],
+    )
 
 
 def _course_competency_rows(course: models.Course) -> list[dict]:
