@@ -4,7 +4,29 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2 class="mb-0">Детали заявки на обучение #{{ application.id }}</h2>
   <div class="d-flex gap-2">
+    {% if current_user.role in ['hr', 'admin'] %}
     <a class="btn btn-primary" href="/applications/{{ application.id }}/edit">Редактировать</a>
+    {% endif %}
+    {% if show_manager_actions %}
+    <div class="d-flex gap-2">
+      {% if application.status != 'approved' %}
+      <form method="post" action="/applications/{{ application.id }}/edit">
+        <input type="hidden" name="goal_text" value="{{ application.goal_text }}">
+        <input type="hidden" name="expected_result_text" value="{{ application.expected_result_text }}">
+        <input type="hidden" name="status" value="approved">
+        <button type="submit" class="btn btn-success">Одобрить</button>
+      </form>
+      {% endif %}
+      {% if application.status != 'rejected' %}
+      <form method="post" action="/applications/{{ application.id }}/edit">
+        <input type="hidden" name="goal_text" value="{{ application.goal_text }}">
+        <input type="hidden" name="expected_result_text" value="{{ application.expected_result_text }}">
+        <input type="hidden" name="status" value="rejected">
+        <button type="submit" class="btn btn-danger">Отклонить</button>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
     <a class="btn btn-outline-secondary" href="/applications">К списку заявок</a>
   </div>
 </div>

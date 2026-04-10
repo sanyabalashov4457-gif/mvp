@@ -1,1 +1,1 @@
-from app.routers import analytics, applications, courses, employees, notifications
+from app.routers import analytics, applications, auth, courses, employees, notifications

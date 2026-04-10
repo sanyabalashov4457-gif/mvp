@@ -10,6 +10,7 @@ from app.models import (
     Direction,
     Employee,
     EmployeeCompetency,
+    User,
 )
 from app.services import compare_competencies
 
@@ -189,6 +190,14 @@ def seed():
                     created_at=datetime.utcnow() - timedelta(days=random.randint(0, 45)),
                 )
             )
+
+        db.add_all(
+            [
+                User(username="admin", password="admin", role="admin"),
+                User(username="hr", password="hr", role="hr"),
+                User(username="manager", password="manager", role="manager"),
+            ]
+        )
 
         db.commit()
         print("Seed completed successfully.")

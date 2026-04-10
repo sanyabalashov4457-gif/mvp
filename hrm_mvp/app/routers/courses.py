@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import models
+from app.auth import get_current_user, require_role
 from app.db import get_db
 from app.services import create_notification
 
@@ -122,10 +123,15 @@ def _course_edit_context(
 
 
 @router.get("/courses", response_class=HTMLResponse)
-def courses_list(request: Request, db: Session = Depends(get_db)):
+def courses_list(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     context = _courses_page_context(request=request, db=db)
     context["page_error"] = _get_course_message(request, "error")
     context["page_success"] = _get_course_message(request, "success")
+    context["current_user"] = current_user
     return templates.TemplateResponse(
         request=request,
         name="courses.html",
@@ -134,7 +140,12 @@ def courses_list(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/courses/{course_id}", response_class=HTMLResponse)
-def course_detail(course_id: int, request: Request, db: Session = Depends(get_db)):
+def course_detail(
+    course_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     course = db.query(models.Course).filter(models.Course.id == course_id).first()
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
@@ -147,20 +158,29 @@ def course_detail(course_id: int, request: Request, db: Session = Depends(get_db
             "course": course,
             "page_error": _get_course_message(request, "error"),
             "page_success": _get_course_message(request, "success"),
+            "current_user": current_user,
             "active_page": "courses",
         },
     )
 
 
 @router.get("/courses/{course_id}/edit", response_class=HTMLResponse)
-def course_edit_form(course_id: int, request: Request, db: Session = Depends(get_db)):
+def course_edit_form(
+    course_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_role(["admin"])),
+):
     course = db.query(models.Course).filter(models.Course.id == course_id).first()
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     return templates.TemplateResponse(
         request=request,
         name="course_edit.html",
-        context=_course_edit_context(request=request, db=db, course=course),
+        context={
+            **_course_edit_context(request=request, db=db, course=course),
+            "current_user": current_user,
+        },
     )
 
 
@@ -177,6 +197,7 @@ async def course_edit(
     competency_id: list[str] = Form(default=[]),
     target_level: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_role(["admin"])),
 ):
     course = db.query(models.Course).filter(models.Course.id == course_id).first()
     if not course:
@@ -257,7 +278,12 @@ async def course_edit(
 
 
 @router.post("/courses/{course_id}/delete")
-def course_delete(course_id: int, request: Request, db: Session = Depends(get_db)):
+def course_delete(
+    course_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_role(["admin"])),
+):
     course = db.query(models.Course).filter(models.Course.id == course_id).first()
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
@@ -300,6 +326,7 @@ async def course_create(
     competency_id: list[str] = Form(default=[]),
     target_level: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_role(["admin"])),
 ):
     name = name.strip()
     description = description.strip()

@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import models
+from app.auth import get_current_user
 from app.db import get_db
 from app.services import get_notification_target_url
 
@@ -16,7 +17,11 @@ templates = Jinja2Templates(
 
 
 @router.get("/notifications", response_class=HTMLResponse)
-def notifications_list(request: Request, db: Session = Depends(get_db)):
+def notifications_list(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     notifications = (
         db.query(models.Notification)
         .order_by(models.Notification.created_at.desc())
@@ -28,13 +33,18 @@ def notifications_list(request: Request, db: Session = Depends(get_db)):
         context={
             "request": request,
             "notifications": notifications,
+            "current_user": current_user,
             "active_page": "notifications",
         },
     )
 
 
 @router.post("/notifications/{notification_id}/read")
-def notifications_mark_read(notification_id: int, db: Session = Depends(get_db)):
+def notifications_mark_read(
+    notification_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     notification = (
         db.query(models.Notification)
         .filter(models.Notification.id == notification_id)
@@ -49,7 +59,11 @@ def notifications_mark_read(notification_id: int, db: Session = Depends(get_db))
 
 
 @router.get("/notifications/{notification_id}/open")
-def notifications_open(notification_id: int, db: Session = Depends(get_db)):
+def notifications_open(
+    notification_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     notification = (
         db.query(models.Notification)
         .filter(models.Notification.id == notification_id)

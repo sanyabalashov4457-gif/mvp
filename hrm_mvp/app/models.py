@@ -15,6 +15,15 @@ class Direction(Base):
     employees = relationship("Employee", back_populates="direction")
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(80), unique=True, nullable=False)
+    password = Column(String(120), nullable=False)
+    role = Column(String(20), nullable=False)
+
+
 class Employee(Base):
     __tablename__ = "employees"
 

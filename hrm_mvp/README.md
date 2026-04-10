@@ -94,8 +94,22 @@ Open in browser:
 - http://127.0.0.1:8000/courses
 - http://127.0.0.1:8000/analytics
 
+## Authentication (Phase 4)
+
+Session-based authentication is enabled.
+
+Default demo users:
+
+- `admin` / `admin` (role: admin)
+- `hr` / `hr` (role: hr)
+- `manager` / `manager` (role: manager)
+
+Login page:
+
+- http://127.0.0.1:8000/login
+
 ## Notes
 
-- No authentication
+- Session auth only (no JWT/OAuth)
 - One app, no microservices
 - MVP-level simple code and structure

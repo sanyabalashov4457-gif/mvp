@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import models
+from app.auth import get_current_user, require_role
 from app.db import get_db
 from app.services import create_notification
 
@@ -67,10 +68,15 @@ def _employee_edit_context(
 
 
 @router.get("/employees", response_class=HTMLResponse)
-def employees_list(request: Request, db: Session = Depends(get_db)):
+def employees_list(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     context = _employees_page_context(request=request, db=db)
     context["page_error"] = _get_employee_message(request, "error")
     context["page_success"] = _get_employee_message(request, "success")
+    context["current_user"] = current_user
     return templates.TemplateResponse(
         request=request,
         name="employees.html",
@@ -79,7 +85,12 @@ def employees_list(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/employees/{employee_id}", response_class=HTMLResponse)
-def employee_detail(employee_id: int, request: Request, db: Session = Depends(get_db)):
+def employee_detail(
+    employee_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
@@ -91,20 +102,29 @@ def employee_detail(employee_id: int, request: Request, db: Session = Depends(ge
             "request": request,
             "employee": employee,
             "page_error": _get_employee_message(request, "error"),
+            "current_user": current_user,
             "active_page": "employees",
         },
     )
 
 
 @router.get("/employees/{employee_id}/edit", response_class=HTMLResponse)
-def employee_edit_form(employee_id: int, request: Request, db: Session = Depends(get_db)):
+def employee_edit_form(
+    employee_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_role(["admin"])),
+):
     employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
     return templates.TemplateResponse(
         request=request,
         name="employee_edit.html",
-        context=_employee_edit_context(request=request, db=db, employee=employee),
+        context={
+            **_employee_edit_context(request=request, db=db, employee=employee),
+            "current_user": current_user,
+        },
     )
 
 
@@ -118,6 +138,7 @@ def employee_edit(
     competency_id: list[str] = Form(default=[]),
     competency_level: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_role(["admin"])),
 ):
     employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
     if not employee:
@@ -176,7 +197,11 @@ def employee_edit(
 
 
 @router.post("/employees/{employee_id}/delete")
-def employee_delete(employee_id: int, db: Session = Depends(get_db)):
+def employee_delete(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_role(["admin"])),
+):
     employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
@@ -215,6 +240,7 @@ def employee_create(
     competency_id: list[str] = Form(default=[]),
     competency_level: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_role(["admin"])),
 ):
     full_name = full_name.strip()
     position = position.strip()
