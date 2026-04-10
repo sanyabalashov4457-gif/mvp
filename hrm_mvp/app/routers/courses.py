@@ -17,6 +17,7 @@ templates = Jinja2Templates(
 COURSE_MESSAGES = {
     "linked_applications": "Нельзя удалить курс: есть связанные заявки.",
     "deleted": "Курс удален.",
+    "updated": "Изменения курса сохранены.",
 }
 
 
@@ -88,6 +89,7 @@ def course_detail(course_id: int, request: Request, db: Session = Depends(get_db
             "request": request,
             "course": course,
             "page_error": _get_course_message(request, "error"),
+            "page_success": _get_course_message(request, "success"),
             "active_page": "courses",
         },
     )
@@ -115,6 +117,8 @@ def course_edit(
     duration_hours: int = Form(...),
     competency_ids: list[str] = Form(default=[]),
     target_levels: list[str] = Form(default=[]),
+    competency_id: list[str] = Form(default=[]),
+    target_level: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
 ):
     course = db.query(models.Course).filter(models.Course.id == course_id).first()
@@ -147,8 +151,14 @@ def course_edit(
         models.CourseCompetency.course_id == course.id
     ).delete(synchronize_session=False)
 
+    parsed_competency_ids = competency_ids if competency_ids else competency_id
+    parsed_target_levels = target_levels if target_levels else target_level
+
     seen_competencies: set[int] = set()
-    for competency_id_raw, target_level_raw in zip(competency_ids, target_levels):
+    for competency_id_raw, target_level_raw in zip(
+        parsed_competency_ids,
+        parsed_target_levels,
+    ):
         if not competency_id_raw or not target_level_raw:
             continue
         if not competency_id_raw.isdigit() or not target_level_raw.isdigit():
@@ -173,7 +183,10 @@ def course_edit(
         notification_type="course_updated",
         target_url=f"/courses/{course.id}",
     )
-    return RedirectResponse(url=f"/courses/{course.id}", status_code=303)
+    return RedirectResponse(
+        url=f"/courses/{course.id}?success=updated",
+        status_code=303,
+    )
 
 
 @router.post("/courses/{course_id}/delete")
@@ -217,6 +230,8 @@ def course_create(
     duration_hours: int = Form(...),
     competency_ids: list[str] = Form(default=[]),
     target_levels: list[str] = Form(default=[]),
+    competency_id: list[str] = Form(default=[]),
+    target_level: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
 ):
     name = name.strip()
@@ -243,8 +258,14 @@ def course_create(
     db.add(new_course)
     db.flush()
 
+    parsed_competency_ids = competency_ids if competency_ids else competency_id
+    parsed_target_levels = target_levels if target_levels else target_level
+
     seen_competencies: set[int] = set()
-    for competency_id_raw, target_level_raw in zip(competency_ids, target_levels):
+    for competency_id_raw, target_level_raw in zip(
+        parsed_competency_ids,
+        parsed_target_levels,
+    ):
         if not competency_id_raw or not target_level_raw:
             continue
         if not competency_id_raw.isdigit() or not target_level_raw.isdigit():
