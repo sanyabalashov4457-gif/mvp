@@ -37,6 +37,44 @@ def _get_course_message(request: Request, key: str) -> str | None:
     return COURSE_MESSAGES.get(code)
 
 
+def _parse_indexed_competencies(form_data) -> tuple[list[str], list[str]]:
+    by_index: dict[str, dict[str, str]] = {}
+    for key, raw_value in form_data.multi_items():
+        value = str(raw_value).strip()
+        if key.startswith("competency_id_"):
+            index = key.removeprefix("competency_id_")
+            if index.isdigit():
+                by_index.setdefault(index, {})["competency"] = value
+        elif key.startswith("target_level_"):
+            index = key.removeprefix("target_level_")
+            if index.isdigit():
+                by_index.setdefault(index, {})["target"] = value
+
+    sorted_indexes = sorted(by_index.keys(), key=int)
+    competency_ids: list[str] = []
+    target_levels: list[str] = []
+    for index in sorted_indexes:
+        row = by_index[index]
+        competency_ids.append(row.get("competency", ""))
+        target_levels.append(row.get("target", ""))
+    return competency_ids, target_levels
+
+
+def _resolve_competency_inputs(
+    raw_competency_ids: list[str],
+    raw_target_levels: list[str],
+    fallback_competency_ids: list[str],
+    fallback_target_levels: list[str],
+    indexed_competency_ids: list[str],
+    indexed_target_levels: list[str],
+) -> tuple[list[str], list[str]]:
+    if raw_competency_ids or raw_target_levels:
+        return raw_competency_ids, raw_target_levels
+    if fallback_competency_ids or fallback_target_levels:
+        return fallback_competency_ids, fallback_target_levels
+    return indexed_competency_ids, indexed_target_levels
+
+
 def _course_competency_rows(course: models.Course) -> list[dict]:
     rows = [
         {"competency_id": item.competency_id, "target_level": item.target_level}
@@ -108,7 +146,7 @@ def course_edit_form(course_id: int, request: Request, db: Session = Depends(get
 
 
 @router.post("/courses/{course_id}/edit")
-def course_edit(
+async def course_edit(
     course_id: int,
     request: Request,
     name: str = Form(...),
@@ -151,8 +189,18 @@ def course_edit(
         models.CourseCompetency.course_id == course.id
     ).delete(synchronize_session=False)
 
-    parsed_competency_ids = competency_ids if competency_ids else competency_id
-    parsed_target_levels = target_levels if target_levels else target_level
+    form_data = await request.form()
+    indexed_competency_ids, indexed_target_levels = _parse_indexed_competencies(
+        form_data
+    )
+    parsed_competency_ids, parsed_target_levels = _resolve_competency_inputs(
+        raw_competency_ids=competency_ids,
+        raw_target_levels=target_levels,
+        fallback_competency_ids=competency_id,
+        fallback_target_levels=target_level,
+        indexed_competency_ids=indexed_competency_ids,
+        indexed_target_levels=indexed_target_levels,
+    )
 
     seen_competencies: set[int] = set()
     for competency_id_raw, target_level_raw in zip(
@@ -222,7 +270,7 @@ def course_delete(course_id: int, request: Request, db: Session = Depends(get_db
 
 
 @router.post("/courses/create")
-def course_create(
+async def course_create(
     request: Request,
     name: str = Form(...),
     description: str = Form(...),
@@ -258,8 +306,18 @@ def course_create(
     db.add(new_course)
     db.flush()
 
-    parsed_competency_ids = competency_ids if competency_ids else competency_id
-    parsed_target_levels = target_levels if target_levels else target_level
+    form_data = await request.form()
+    indexed_competency_ids, indexed_target_levels = _parse_indexed_competencies(
+        form_data
+    )
+    parsed_competency_ids, parsed_target_levels = _resolve_competency_inputs(
+        raw_competency_ids=competency_ids,
+        raw_target_levels=target_levels,
+        fallback_competency_ids=competency_id,
+        fallback_target_levels=target_level,
+        indexed_competency_ids=indexed_competency_ids,
+        indexed_target_levels=indexed_target_levels,
+    )
 
     seen_competencies: set[int] = set()
     for competency_id_raw, target_level_raw in zip(
