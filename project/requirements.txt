@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+chromadb
+pymupdf
+requests
+python-dotenv
