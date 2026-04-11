@@ -14,7 +14,13 @@ def _embed_query(query: str) -> List[float]:
     return embed_text(query, timeout=settings.query_timeout_seconds)
 
 
-def retrieve(query: str, top_k: int = 5) -> List[Dict]:
+def _distance_to_similarity(distance: float) -> float:
+    # Chroma returns distance where lower is better. Convert to [0..1] similarity.
+    normalized = max(0.0, min(1.0, 1.0 - float(distance)))
+    return normalized
+
+
+def retrieve(query: str, top_k: int = 3, min_similarity: float = 0.2) -> List[Dict]:
     settings.db_dir.mkdir(parents=True, exist_ok=True)
     client = chromadb.PersistentClient(path=str(settings.db_dir))
     try:
@@ -32,17 +38,28 @@ def retrieve(query: str, top_k: int = 5) -> List[Dict]:
 
     documents = results.get("documents", [[]])[0]
     metadatas = results.get("metadatas", [[]])[0]
+    distances = results.get("distances", [[]])[0]
 
     chunks: List[Dict] = []
-    for document, metadata in zip(documents, metadatas):
+    for document, metadata, distance in zip(documents, metadatas, distances):
+        similarity_score = _distance_to_similarity(distance)
+        if similarity_score < min_similarity:
+            continue
         chunks.append(
             {
                 "text": document,
                 "page": int(metadata.get("page", -1)),
+                "score": similarity_score,
             }
         )
 
     logger.info("Retrieved %s chunks for query: %s", len(chunks), query)
     for idx, chunk in enumerate(chunks, start=1):
-        logger.info("Chunk %s | page=%s | text=%s", idx, chunk["page"], chunk["text"][:180])
+        logger.info(
+            "Chunk %s | score=%.3f | page=%s | text=%s",
+            idx,
+            chunk["score"],
+            chunk["page"],
+            chunk["text"][:180],
+        )
     return chunks

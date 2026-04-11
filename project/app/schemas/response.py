@@ -6,6 +6,7 @@ from pydantic import BaseModel
 class SourceItem(BaseModel):
     text: str
     page: int
+    similarity: float | None = None
 
 
 class AskResponse(BaseModel):
