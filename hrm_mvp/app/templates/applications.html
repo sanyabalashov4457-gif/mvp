@@ -17,7 +17,7 @@
           <th>Статус</th>
           <th>Сходство</th>
           <th>Создано</th>
-          <th></th>
+          <th>Действия</th>
         </tr>
       </thead>
       <tbody>
@@ -29,7 +29,11 @@
           <td><span class="badge text-bg-secondary">{{ get_status_label(item.status) }}</span></td>
           <td>{{ item.similarity_percent }}%</td>
           <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-          <td><a class="btn btn-sm btn-outline-primary" href="/applications/{{ item.id }}">Просмотр</a></td>
+          <td class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-primary" href="/applications/{{ item.id }}">Просмотр</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/applications/{{ item.id }}/edit">Редактировать</a>
+            <a class="btn btn-sm btn-outline-warning" href="/applications/{{ item.id }}/edit">Изменить статус</a>
+          </td>
         </tr>
       {% else %}
         <tr><td colspan="7" class="text-center py-4">Заявок пока нет</td></tr>

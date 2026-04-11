@@ -5,7 +5,6 @@
   <h2 class="mb-0">Детали заявки на обучение #{{ application.id }}</h2>
   <div class="d-flex gap-2">
     <a class="btn btn-primary" href="/applications/{{ application.id }}/edit">Редактировать</a>
-    {% if show_manager_actions %}
     <div class="d-flex gap-2">
       {% if application.status != 'approved' %}
       <form method="post" action="/applications/{{ application.id }}/edit">
@@ -24,7 +23,6 @@
       </form>
       {% endif %}
     </div>
-    {% endif %}
     <a class="btn btn-outline-secondary" href="/applications">К списку заявок</a>
   </div>
 </div>
