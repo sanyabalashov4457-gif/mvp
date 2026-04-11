@@ -71,6 +71,17 @@ python scripts/ingest.py
 
 Если Ollama не установлен или не запущен, скрипт выведет понятную ошибку с инструкцией.
 
+Проверка ChromaDB после ingest:
+
+```bash
+python debug_chroma.py
+```
+
+Ожидаемый вывод:
+
+- `Collections: ['documents']`
+- `Count: <N>`
+
 Что происходит:
 
 - читаются все PDF из `data/docs`
@@ -167,6 +178,7 @@ curl -X POST "http://127.0.0.1:8000/ask" \
 OLLAMA_URL=http://localhost:11434
 MODEL_NAME=llama3
 EMBED_MODEL=nomic-embed-text
+CHROMA_COLLECTION=documents
 ```
 
 Дополнительно:

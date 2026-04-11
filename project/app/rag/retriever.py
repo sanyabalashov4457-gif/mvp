@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, List
 
-import chromadb
+from chromadb import PersistentClient
 
 from app.config import settings
 from app.rag.ollama_client import embed_text
@@ -20,14 +20,19 @@ def _distance_to_similarity(distance: float) -> float:
     return normalized
 
 
-def retrieve(query: str, top_k: int = 3, min_similarity: float = 0.2) -> List[Dict]:
+def retrieve(query: str, top_k: int = 3) -> List[Dict]:
     settings.db_dir.mkdir(parents=True, exist_ok=True)
-    client = chromadb.PersistentClient(path=str(settings.db_dir))
+    client = PersistentClient(path=str(settings.db_dir))
     try:
         collection = client.get_collection(settings.chroma_collection)
     except Exception:  # noqa: BLE001
         logger.warning("Collection '%s' not found. Run ingest first.", settings.chroma_collection)
         return []
+
+    collection_count = collection.count()
+    print(f"Collection count: {collection_count}")
+    if collection_count == 0:
+        raise Exception("Chroma collection is empty. Run ingest first.")
 
     query_embedding = _embed_query(query)
     results = collection.query(
@@ -43,16 +48,16 @@ def retrieve(query: str, top_k: int = 3, min_similarity: float = 0.2) -> List[Di
     chunks: List[Dict] = []
     for document, metadata, distance in zip(documents, metadatas, distances):
         similarity_score = _distance_to_similarity(distance)
-        if similarity_score < min_similarity:
-            continue
         chunks.append(
             {
                 "text": document,
                 "page": int(metadata.get("page", -1)),
                 "score": similarity_score,
+                "similarity": similarity_score,
             }
         )
 
+    print(f"Found {len(chunks)} chunks")
     logger.info("Retrieved %s chunks for query: %s", len(chunks), query)
     for idx, chunk in enumerate(chunks, start=1):
         logger.info(

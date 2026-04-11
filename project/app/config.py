@@ -17,7 +17,7 @@ class Settings:
     embed_model: str = os.getenv("EMBED_MODEL", "nomic-embed-text")
     docs_dir: Path = BASE_DIR / "data" / "docs"
     db_dir: Path = BASE_DIR / "db"
-    chroma_collection: str = os.getenv("CHROMA_COLLECTION", "api_docs")
+    chroma_collection: str = os.getenv("CHROMA_COLLECTION", "documents")
     ask_timeout_seconds: int = int(os.getenv("ASK_TIMEOUT_SECONDS", "10"))
     query_timeout_seconds: int = int(
         os.getenv(

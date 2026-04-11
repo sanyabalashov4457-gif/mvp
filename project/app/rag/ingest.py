@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-import chromadb
+from chromadb import PersistentClient
 
 from app.config import settings
 from app.rag.ollama_client import OllamaConnectionError, embed_text
@@ -21,14 +21,17 @@ def ingest_documents() -> int:
         logger.warning("No PDF pages found for ingest in %s", settings.docs_dir)
         return 0
 
-    client = chromadb.PersistentClient(path=str(settings.db_dir))
+    client = PersistentClient(path=str(settings.db_dir))
     collection = client.get_or_create_collection(name=settings.chroma_collection)
+    print(f"Collection name: {collection.name}")
+    print(f"Before insert: {collection.count()}")
 
     existing = collection.count()
     if existing:
         logger.info("Clearing existing collection items: %s", existing)
         client.delete_collection(settings.chroma_collection)
         collection = client.get_or_create_collection(name=settings.chroma_collection)
+        print(f"Before insert: {collection.count()}")
 
     ids = []
     documents = []
@@ -53,6 +56,7 @@ def ingest_documents() -> int:
 
     if ids:
         collection.add(ids=ids, documents=documents, metadatas=metadatas, embeddings=embeddings)
+    print(f"After insert: {collection.count()}")
 
     logger.info("Ingest completed. Indexed chunks: %s", len(ids))
     return len(ids)

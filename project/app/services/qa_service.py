@@ -48,7 +48,7 @@ def answer_question(question: str) -> dict:
     knowledge = find_relevant_knowledge(question)
     knowledge_used = bool(knowledge.get("knowledge_used"))
     context_chunks = retrieve(question, top_k=3)
-    similarity_scores = [float(chunk.get("similarity", 0.0)) for chunk in context_chunks]
+    similarity_scores = [float(chunk.get("score", 0.0)) for chunk in context_chunks]
     confidence = max(similarity_scores) if similarity_scores else 0.0
     hybrid_context = _build_hybrid_context(knowledge=knowledge, chunks=context_chunks)
 

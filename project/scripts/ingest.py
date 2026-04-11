@@ -12,6 +12,7 @@ if __name__ == "__main__":
     try:
         total_chunks = ingest_documents()
         print(f"Indexed chunks: {total_chunks}")
+        print("Run `python debug_chroma.py` to inspect saved collections and count.")
     except RuntimeError as exc:
         print(f"Ingest failed: {exc}")
         raise SystemExit(1) from exc
