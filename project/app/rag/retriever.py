@@ -32,6 +32,12 @@ def retrieve(query: str, top_k: int = 3) -> List[Dict]:
 
     collection_count = collection.count()
     print(f"Collection count: {collection_count}")
+    metric = str((collection.metadata or {}).get("hnsw:space", "unknown"))
+    print(f"Collection metric: {metric}")
+    if metric != "cosine":
+        raise Exception(
+            "Chroma collection metric is not cosine. Re-run ingest to recreate collection with cosine metric."
+        )
     if collection_count == 0:
         raise Exception("Chroma collection is empty. Run ingest first.")
 

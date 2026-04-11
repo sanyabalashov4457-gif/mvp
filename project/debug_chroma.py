@@ -9,6 +9,7 @@ def main() -> None:
 
     collection = client.get_collection("documents")
     print("Count:", collection.count())
+    print("Metadata:", collection.metadata)
 
 
 if __name__ == "__main__":

@@ -23,22 +23,18 @@ def ingest_documents() -> int:
         return 0
 
     client = PersistentClient(path=str(settings.db_dir))
+    # Always recreate collection to guarantee expected distance metric.
+    try:
+        client.delete_collection(settings.chroma_collection)
+    except Exception:  # noqa: BLE001
+        pass
     collection = client.get_or_create_collection(
         name=settings.chroma_collection,
         metadata=COLLECTION_METADATA,
     )
     print(f"Collection name: {collection.name}")
-    print(f"Before insert: {collection.count()}")
-
-    existing = collection.count()
-    if existing:
-        logger.info("Clearing existing collection items: %s", existing)
-        client.delete_collection(settings.chroma_collection)
-        collection = client.get_or_create_collection(
-            name=settings.chroma_collection,
-            metadata=COLLECTION_METADATA,
-        )
-        print(f"Before insert: {collection.count()}")
+    print(f"Collection metric: {collection.metadata.get('hnsw:space', 'unknown')}")
+    print("Before insert: 0")
 
     ids = []
     documents = []
