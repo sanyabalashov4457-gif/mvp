@@ -49,7 +49,7 @@ def ingest_documents() -> int:
             documents.append(chunk)
             metadatas.append({"page": page_number})
             try:
-                embeddings.append(embed_text(chunk))
+                embeddings.append(embed_text(chunk, timeout=settings.ingest_timeout_seconds))
             except OllamaConnectionError as exc:
                 logger.error("%s", exc)
                 raise RuntimeError(str(exc)) from exc
