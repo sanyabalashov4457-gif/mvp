@@ -1,0 +1,10 @@
+body {
+  min-height: 100vh;
+}
+
+.metric {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  background: #fff;
+}

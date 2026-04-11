@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Аналитика</h2>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card text-bg-primary">
+      <div class="card-body">
+        <h6>Всего заявок</h6>
+        <h3>{{ total_applications }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-bg-success">
+      <div class="card-body">
+        <h6>Среднее совпадение</h6>
+        <h3>{{ avg_similarity }}%</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h6>Статусов в отчете</h6>
+        <h3>{{ status_counts|length }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Заявки по статусам</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Статус</th>
+              <th>Количество</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for status, count in status_counts.items() %}
+            <tr>
+              <td>{{ get_status_label(status) }}</td>
+              <td>{{ count }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="2" class="text-center py-4">Нет данных</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Распределение статусов</div>
+      <div class="card-body">
+        <canvas id="statusChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  const statusCounts = {{ status_counts | tojson }};
+  const statusLabelMap = {
+    new: "Новая",
+    approved: "Одобрена",
+    rejected: "Отклонена",
+    in_progress: "В процессе",
+    training_completed: "Обучение завершено",
+    training_not_completed: "Обучение не закончено"
+  };
+  const labels = Object.keys(statusCounts).map((key) => statusLabelMap[key] || key);
+  const values = Object.values(statusCounts);
+
+  if (labels.length > 0) {
+    new Chart(document.getElementById("statusChart"), {
+      type: "pie",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            data: values,
+            backgroundColor: ["#0d6efd", "#198754", "#dc3545", "#ffc107", "#6c757d", "#20c997"]
+          }
+        ]
+      }
+    });
+  }
+</script>
+{% endblock %}

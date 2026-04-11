@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Детали заявки на обучение #{{ application.id }}</h2>
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="/applications/{{ application.id }}/edit">Редактировать</a>
+    <div class="d-flex gap-2">
+      {% if application.status != 'approved' %}
+      <form method="post" action="/applications/{{ application.id }}/edit">
+        <input type="hidden" name="goal_text" value="{{ application.goal_text }}">
+        <input type="hidden" name="expected_result_text" value="{{ application.expected_result_text }}">
+        <input type="hidden" name="status" value="approved">
+        <button type="submit" class="btn btn-success">Одобрить</button>
+      </form>
+      {% endif %}
+      {% if application.status != 'rejected' %}
+      <form method="post" action="/applications/{{ application.id }}/edit">
+        <input type="hidden" name="goal_text" value="{{ application.goal_text }}">
+        <input type="hidden" name="expected_result_text" value="{{ application.expected_result_text }}">
+        <input type="hidden" name="status" value="rejected">
+        <button type="submit" class="btn btn-danger">Отклонить</button>
+      </form>
+      {% endif %}
+    </div>
+    <a class="btn btn-outline-secondary" href="/applications">К списку заявок</a>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">Сотрудник и курс</div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <p class="mb-1"><strong>Сотрудник:</strong> {{ application.employee.full_name }}</p>
+        <p class="mb-1"><strong>Направление:</strong> {{ application.employee.direction.name }}</p>
+        <p class="mb-0"><strong>Должность:</strong> {{ application.employee.position }}</p>
+      </div>
+      <div class="col-md-6">
+        <p class="mb-1"><strong>Курс:</strong> {{ application.course.name }}</p>
+        <p class="mb-1"><strong>Формат курса:</strong> {{ application.course.format }}</p>
+        <p class="mb-0"><strong>Дата создания:</strong> {{ application.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">Цель и ожидаемый результат</div>
+  <div class="card-body">
+    <p class="mb-2"><strong>Цель:</strong></p>
+    <p>{{ application.goal_text }}</p>
+    <p class="mb-2"><strong>Ожидаемый результат:</strong></p>
+    <p class="mb-0">{{ application.expected_result_text }}</p>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">Метрики заявки</div>
+  <div class="card-body">
+    <div class="row text-center mb-3">
+      <div class="col-md-3"><div class="metric">Статус<br><strong>{{ get_status_label(application.status) }}</strong></div></div>
+      <div class="col-md-3"><div class="metric">Сходство<br><strong>{{ application.similarity_percent }}%</strong></div></div>
+      <div class="col-md-3"><div class="metric">Совпадения навыков<br><strong>{{ application.current_skill_matches }}</strong></div></div>
+      <div class="col-md-3"><div class="metric">Требуют развития<br><strong>{{ application.growth_skills_count }}</strong></div></div>
+    </div>
+    <div class="row text-center">
+      <div class="col-md-3"><div class="metric">Новые навыки<br><strong>{{ application.new_skills_count }}</strong></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Снимок сравнения компетенций</div>
+  <div class="card-body">
+    <table class="table table-sm table-bordered mb-0">
+      <thead>
+        <tr>
+          <th>Компетенция</th>
+          <th>Уровень сотрудника</th>
+          <th>Требуемый уровень курса</th>
+          <th>Результат</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in snapshot_rows %}
+        <tr>
+          <td>{{ row.competency_name }}</td>
+          <td>{{ row.employee_level if row.employee_level is not none else '-' }}</td>
+          <td>{{ row.course_target_level }}</td>
+          <td>
+            <span class="badge {{ get_snapshot_result_badge_class(row.status) }}">{{ get_snapshot_result_label(row.status) }}</span>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center py-3">Снимок сравнения отсутствует</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

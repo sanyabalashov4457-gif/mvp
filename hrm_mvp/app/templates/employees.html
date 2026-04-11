@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Сотрудники</h2>
+</div>
+
+{% if page_error %}
+<div class="alert alert-danger">{{ page_error }}</div>
+{% endif %}
+{% if page_success %}
+<div class="alert alert-success">{{ page_success }}</div>
+{% endif %}
+
+<div class="card mb-4">
+  <div class="card-header">Добавить сотрудника</div>
+  <div class="card-body">
+    {% if form_error %}
+    <div class="alert alert-danger">{{ form_error }}</div>
+    {% endif %}
+    <form method="post" action="/employees/create" class="row g-3">
+      <div class="col-md-5">
+        <label class="form-label">ФИО</label>
+        <input type="text" name="full_name" class="form-control" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Направление</label>
+        <select name="direction_id" class="form-select" required>
+          {% for direction in directions %}
+          <option value="{{ direction.id }}">{{ direction.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Должность</label>
+        <input type="text" name="position" class="form-control" required>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Компетенции сотрудника</label>
+      </div>
+      {% for idx in range(3) %}
+      <div class="col-md-6">
+        <select name="competency_id" class="form-select">
+          <option value="">Выберите компетенцию</option>
+          {% for competency in competencies %}
+          <option value="{{ competency.id }}">{{ competency.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="number" min="1" max="5" name="competency_level" class="form-control" placeholder="Уровень 1-5">
+      </div>
+      {% endfor %}
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Создать сотрудника</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body p-0">
+    <table class="table table-striped mb-0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>ФИО</th>
+          <th>Направление</th>
+          <th>Должность</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for employee in employees %}
+        <tr>
+          <td>{{ employee.id }}</td>
+          <td>{{ employee.full_name }}</td>
+          <td>{{ employee.direction.name }}</td>
+          <td>{{ employee.position }}</td>
+          <td class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-primary" href="/employees/{{ employee.id }}">Просмотр</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/employees/{{ employee.id }}/edit">Редактировать</a>
+            <form method="post" action="/employees/{{ employee.id }}/delete" onsubmit="return confirm('Удалить сотрудника?');">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
