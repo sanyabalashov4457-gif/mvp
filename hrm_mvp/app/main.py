@@ -91,8 +91,7 @@ app.include_router(notifications.router)
 
 @app.get("/")
 def root_redirect(request: Request):
-    session_data = request.scope.get("session") or {}
-    if session_data.get("user_id"):
+    if request.session.get("user_id"):
         return RedirectResponse(url="/applications")
     return RedirectResponse(url="/login")
 

@@ -50,7 +50,7 @@ def login_submit(
     request.session["user_id"] = user.id
     request.session["username"] = user.username
     request.session["role"] = user.role
-    return RedirectResponse(url="/applications", status_code=303)
+    return RedirectResponse(url="/", status_code=303)
 
 
 @router.get("/logout")
