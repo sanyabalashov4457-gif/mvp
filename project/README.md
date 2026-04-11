@@ -5,7 +5,9 @@
 - принимает PDF-документацию из `data/docs`
 - делает chunking + embeddings
 - сохраняет данные в векторную БД
-- отвечает на вопросы через `POST /ask` с RAG-пайплайном
+- отвечает на вопросы через `POST /ask` с гибридным пайплайном:
+  - STRUCTURED KNOWLEDGE (JSON)
+  - DOCUMENT RAG (ChromaDB)
 - возвращает структурированный JSON, удобный для n8n
 
 ## 1) Установка
@@ -110,9 +112,38 @@ curl -X POST "http://127.0.0.1:8000/ask" \
       "text": "....",
       "page": 12
     }
-  ]
+  ],
+  "knowledge_used": true
 }
 ```
+
+## Structured Knowledge Layer
+
+В проект добавлен слой структурированных знаний:
+
+- `app/knowledge/knowledge_store.json` — JSON knowledge base
+- `app/knowledge/knowledge_loader.py` — загрузка и keyword retrieval
+
+Формат knowledge store:
+
+```json
+{
+  "auth": [],
+  "headers": {},
+  "endpoints": [],
+  "flows": [],
+  "entities": [],
+  "statuses": [],
+  "reference": [],
+  "notes": []
+}
+```
+
+При ответе сервис:
+1. Ищет релевантные knowledge-элементы
+2. Ищет релевантные PDF chunks
+3. Объединяет контекст с приоритетом structured data
+4. Генерирует финальный ответ
 
 ## n8n интеграция
 

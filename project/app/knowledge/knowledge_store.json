@@ -1,0 +1,208 @@
+{
+  "auth": [
+    {
+      "method": "POST",
+      "path": "/auth/token",
+      "description": "Получение access token для вызовов API",
+      "request_fields": [
+        "clientId",
+        "clientSecret",
+        "grantType"
+      ],
+      "response_fields": [
+        "accessToken",
+        "expiresIn",
+        "tokenType"
+      ]
+    }
+  ],
+  "headers": {
+    "required": [
+      {
+        "name": "Authorization",
+        "description": "Bearer access token"
+      },
+      {
+        "name": "X-Request-ID",
+        "description": "Уникальный идентификатор запроса"
+      },
+      {
+        "name": "Content-Type",
+        "description": "Тип контента запроса, обычно application/json"
+      }
+    ],
+    "optional": [
+      {
+        "name": "X-Signature",
+        "description": "Подпись запроса, если требуется интеграционным профилем"
+      }
+    ]
+  },
+  "endpoints": [
+    {
+      "domain": "payments",
+      "operation": "create",
+      "method": "POST",
+      "path": "/payments/create",
+      "description": "Создание платежа",
+      "request_fields": [
+        "transactionId",
+        "amount",
+        "currency",
+        "recipient"
+      ],
+      "response_fields": [
+        "paymentId",
+        "status",
+        "createdAt"
+      ],
+      "important_notes": [
+        "После создания проверяйте итоговый статус отдельным запросом"
+      ]
+    },
+    {
+      "domain": "payments",
+      "operation": "status",
+      "method": "GET",
+      "path": "/payments/status",
+      "description": "Проверка статуса платежа",
+      "request_fields": [
+        "paymentId"
+      ],
+      "response_fields": [
+        "paymentId",
+        "status",
+        "errorCode",
+        "errorMessage"
+      ],
+      "important_notes": [
+        "Используется для polling по paymentId"
+      ]
+    },
+    {
+      "domain": "transfers",
+      "operation": "create",
+      "method": "POST",
+      "path": "/transfers/create",
+      "description": "Создание перевода",
+      "request_fields": [
+        "transferId",
+        "amount",
+        "recipientAccount"
+      ],
+      "response_fields": [
+        "transferId",
+        "status",
+        "createdAt"
+      ],
+      "important_notes": [
+        "transferId должен быть уникальным"
+      ]
+    },
+    {
+      "domain": "qr",
+      "operation": "status",
+      "method": "POST",
+      "path": "/qr/check",
+      "description": "Проверка данных QR-операции",
+      "request_fields": [
+        "qrTicketId"
+      ],
+      "response_fields": [
+        "qrTicketId",
+        "status",
+        "amount"
+      ],
+      "important_notes": [
+        "Перед подтверждением операции вызывайте проверку QR"
+      ]
+    },
+    {
+      "domain": "qr",
+      "operation": "confirm",
+      "method": "POST",
+      "path": "/qr/result",
+      "description": "Получение результата/подтверждения QR-операции",
+      "request_fields": [
+        "qrTicketId",
+        "transactionId"
+      ],
+      "response_fields": [
+        "status",
+        "processedAt",
+        "errorCode"
+      ],
+      "important_notes": [
+        "Используется после шага /qr/check в бизнес-флоу QR"
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "name": "qr_payment",
+      "steps": [
+        "/qr/check",
+        "/qr/result"
+      ]
+    },
+    {
+      "name": "payment_processing",
+      "steps": [
+        "/payments/create",
+        "/payments/status"
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "name": "transfer",
+      "description": "Сущность банковского перевода"
+    },
+    {
+      "name": "payment",
+      "description": "Сущность платежа"
+    },
+    {
+      "name": "qr",
+      "description": "Сущность QR-операции"
+    },
+    {
+      "name": "registry",
+      "description": "Сущность реестровых операций"
+    }
+  ],
+  "statuses": [
+    {
+      "name": "CREATED",
+      "description": "Операция создана"
+    },
+    {
+      "name": "PROCESSING",
+      "description": "Операция обрабатывается"
+    },
+    {
+      "name": "PROCESSED",
+      "description": "Операция успешно завершена"
+    },
+    {
+      "name": "REJECTED",
+      "description": "Операция отклонена"
+    }
+  ],
+  "reference": [
+    {
+      "name": "idempotency",
+      "description": "Повторный запрос с тем же идентификатором не должен создавать дубль"
+    }
+  ],
+  "notes": [
+    {
+      "endpoint": "/payments/create",
+      "note": "После create обычно требуется polling статуса через /payments/status"
+    },
+    {
+      "endpoint": "/transfers/create",
+      "note": "Проверяйте уникальность transferId до отправки запроса"
+    }
+  ]
+}

@@ -11,3 +11,4 @@ class SourceItem(BaseModel):
 class AskResponse(BaseModel):
     answer: str
     sources: List[SourceItem]
+    knowledge_used: bool
