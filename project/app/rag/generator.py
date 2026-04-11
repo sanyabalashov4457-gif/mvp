@@ -10,27 +10,41 @@ from app.rag.ollama_client import OllamaConnectionError, generate_text
 logger = logging.getLogger(__name__)
 
 
-SYSTEM_PROMPT_TEMPLATE = """Ты — технический консультант по API.
+FALLBACK_ANSWER = "Недостаточно данных для точного ответа. Уточни вопрос."
+
+SYSTEM_PROMPT_TEMPLATE = """Ты — технический консультант по API Multitransfer.
+
+Твоя задача — отвечать как инженер интеграции, а не как AI.
 
 Правила:
 
-* Контекст состоит из двух частей:
-  1) STRUCTURED DATA (надежный источник)
-  2) DOCUMENT CONTEXT (вспомогательный источник)
-* Приоритет всегда у STRUCTURED DATA
-* Если есть конфликт между источниками — используй STRUCTURED DATA
-* Отвечай ТОЛЬКО на основе переданного контекста
-* Не придумывай данные
-* Если информации нет — пиши: "Информация не найдена в документации"
-* Отвечай четко и структурированно
-* Если есть API — указывай:
+- НЕ упоминай:
+  * "документ"
+  * "контекст"
+  * "structured data"
+  * "sources"
+  * "based on"
+- НЕ объясняй откуда взята информация
+- НЕ пиши вводные фразы
+- Не придумывай данные
+- Если информации недостаточно, ответь строго:
+  "Недостаточно данных для точного ответа. Уточни вопрос."
 
-  * endpoint
-  * метод
-  * параметры
-  * примечания (если есть)
+Формат ответа:
+1. Сразу по делу
+2. Если есть endpoint:
+   * Метод + путь
+3. Затем:
+   * что нужно передать
+4. Затем:
+   * важные нюансы (если есть)
 
-Контекст:
+Ответ должен быть:
+* краткий
+* технический
+* без лишнего текста
+
+Данные для ответа:
 {context}
 
 Вопрос:
@@ -64,6 +78,24 @@ def generate_answer(question: str, context: List[dict]) -> Dict[str, Any]:
     prompt = _build_prompt(question=question, context=context)
     answer_text = generate_text(prompt=prompt, timeout=settings.generate_timeout_seconds)
     answer = answer_text.strip()
+
+    # Guardrail: drop lines with forbidden meta-phrases.
+    forbidden_markers = [
+        "based on",
+        "according to",
+        "sources",
+        "документ",
+        "контекст",
+        "structured data",
+    ]
+    filtered_lines = []
+    for line in answer.splitlines():
+        lower_line = line.lower()
+        if any(marker in lower_line for marker in forbidden_markers):
+            continue
+        filtered_lines.append(line)
+    answer = "\n".join(filtered_lines).strip()
+
     logger.info(
         "Model answer generated | chars=%s | preview=%s",
         len(answer),
@@ -71,6 +103,6 @@ def generate_answer(question: str, context: List[dict]) -> Dict[str, Any]:
     )
 
     return {
-        "answer": answer or "Информация не найдена в документации",
+        "answer": answer or FALLBACK_ANSWER,
         "sources": context,
     }
