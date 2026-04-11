@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def _embed_query(query: str) -> List[float]:
-    return embed_text(query, timeout=settings.query_embed_timeout_seconds)
+    return embed_text(query, timeout=settings.query_timeout_seconds)
 
 
 def retrieve(query: str, top_k: int = 5) -> List[Dict]:

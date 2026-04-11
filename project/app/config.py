@@ -30,5 +30,10 @@ class Settings:
     )
     ingest_timeout_seconds: int = int(os.getenv("INGEST_TIMEOUT_SECONDS", "60"))
 
+    @property
+    def query_embed_timeout_seconds(self) -> int:
+        """Backward-compatible alias for query timeout naming."""
+        return self.query_timeout_seconds
+
 
 settings = Settings()
