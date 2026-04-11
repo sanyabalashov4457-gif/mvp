@@ -12,7 +12,6 @@
 <div class="alert alert-success">{{ page_success }}</div>
 {% endif %}
 
-{% if request.state.current_role == 'admin' %}
 <div class="card mb-4">
   <div class="card-header">Добавить курс</div>
   <div class="card-body">
@@ -60,7 +59,6 @@
     </form>
   </div>
 </div>
-{% endif %}
 
 <div class="card mb-4">
   <div class="card-body p-0">
@@ -83,12 +81,10 @@
           <td>{{ course.duration_hours }}</td>
           <td class="d-flex gap-2">
             <a class="btn btn-sm btn-outline-primary" href="/courses/{{ course.id }}">Открыть</a>
-            {% if request.state.current_role == 'admin' %}
             <a class="btn btn-sm btn-outline-secondary" href="/courses/{{ course.id }}/edit">Редактировать</a>
             <form method="post" action="/courses/{{ course.id }}/delete" onsubmit="return confirm('Удалить курс?');">
               <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
             </form>
-            {% endif %}
           </td>
         </tr>
         {% endfor %}

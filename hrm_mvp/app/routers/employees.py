@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import models
-from app.auth import get_current_user, require_role
+from app.auth import get_current_user
 from app.db import get_db
 from app.services import create_notification
 
@@ -113,7 +113,7 @@ def employee_edit_form(
     employee_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
     if not employee:
@@ -138,7 +138,7 @@ def employee_edit(
     competency_id: list[str] = Form(default=[]),
     competency_level: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
     if not employee:
@@ -200,7 +200,7 @@ def employee_edit(
 def employee_delete(
     employee_id: int,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
     if not employee:
@@ -240,7 +240,7 @@ def employee_create(
     competency_id: list[str] = Form(default=[]),
     competency_level: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     full_name = full_name.strip()
     position = position.strip()

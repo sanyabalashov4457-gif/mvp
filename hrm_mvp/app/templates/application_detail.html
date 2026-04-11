@@ -4,9 +4,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2 class="mb-0">Детали заявки на обучение #{{ application.id }}</h2>
   <div class="d-flex gap-2">
-    {% if current_user.role in ['hr', 'admin'] %}
     <a class="btn btn-primary" href="/applications/{{ application.id }}/edit">Редактировать</a>
-    {% endif %}
     {% if show_manager_actions %}
     <div class="d-flex gap-2">
       {% if application.status != 'approved' %}

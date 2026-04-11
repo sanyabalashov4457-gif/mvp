@@ -5,12 +5,10 @@
   <h2 class="mb-0">Карточка сотрудника</h2>
   <div class="d-flex gap-2">
     <a class="btn btn-outline-secondary" href="/employees">К списку сотрудников</a>
-    {% if current_user and current_user.role == "admin" %}
     <a class="btn btn-outline-primary" href="/employees/{{ employee.id }}/edit">Редактировать</a>
     <form method="post" action="/employees/{{ employee.id }}/delete" onsubmit="return confirm('Удалить сотрудника?');">
       <button type="submit" class="btn btn-outline-danger">Удалить</button>
     </form>
-    {% endif %}
   </div>
 </div>
 

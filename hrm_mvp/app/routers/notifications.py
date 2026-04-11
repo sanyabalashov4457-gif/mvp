@@ -43,7 +43,7 @@ def notifications_list(
 def notifications_mark_read(
     notification_id: int,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
+    _current_user: models.User = Depends(get_current_user),
 ):
     notification = (
         db.query(models.Notification)
@@ -62,7 +62,7 @@ def notifications_mark_read(
 def notifications_open(
     notification_id: int,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
+    _current_user: models.User = Depends(get_current_user),
 ):
     notification = (
         db.query(models.Notification)

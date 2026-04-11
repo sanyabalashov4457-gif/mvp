@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import models
-from app.auth import get_current_user, require_role
+from app.auth import get_current_user
 from app.db import get_db
 from app.services import (
     APPLICATION_STATUS_CHOICES,
@@ -63,7 +63,7 @@ def application_create_form(
     employee_id: str | None = None,
     course_id: str | None = None,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["hr", "admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     employees = db.query(models.Employee).order_by(models.Employee.full_name).all()
     courses = db.query(models.Course).order_by(models.Course.name).all()
@@ -114,7 +114,7 @@ def application_create_submit(
     expected_result_text: str = Form(...),
     status: str = Form("new"),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["hr", "admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     if status not in APPLICATION_STATUS_CHOICES:
         status = "new"
@@ -194,7 +194,7 @@ def application_edit_form(
     application_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["hr", "manager", "admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     application = (
         db.query(models.Application)
@@ -210,11 +210,7 @@ def application_edit_form(
         context={
             "request": request,
             "application": application,
-            "status_choices": [
-                code
-                for code in APPLICATION_STATUS_CHOICES
-                if code in get_allowed_statuses_for_role(current_user.role)
-            ],
+            "status_choices": APPLICATION_STATUS_CHOICES,
             "get_status_label": get_status_label,
             "current_user": current_user,
             "active_page": "applications",
@@ -229,7 +225,7 @@ def application_edit_submit(
     goal_text: str = Form(""),
     expected_result_text: str = Form(""),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["hr", "manager", "admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     application = (
         db.query(models.Application)
@@ -251,9 +247,9 @@ def application_edit_submit(
     goal_text_clean = goal_text.strip()
     expected_result_clean = expected_result_text.strip()
 
-    if goal_text_clean and current_user.role in {"hr", "admin"}:
+    if goal_text_clean:
         application.goal_text = goal_text_clean
-    if expected_result_clean and current_user.role in {"hr", "admin"}:
+    if expected_result_clean:
         application.expected_result_text = expected_result_clean
 
     db.commit()

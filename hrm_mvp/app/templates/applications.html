@@ -3,9 +3,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2 class="mb-0">Заявки на обучение</h2>
-  {% if current_user.role in ["hr", "admin"] %}
   <a class="btn btn-primary" href="/applications/create">Создать заявку</a>
-  {% endif %}
 </div>
 
 <div class="card">

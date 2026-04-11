@@ -113,12 +113,6 @@
 <div class="card">
   <div class="card-header">3) Отправка заявки</div>
   <div class="card-body">
-    {% if current_user.role == "manager" %}
-    <div class="alert alert-warning">
-      Руководитель не может создавать заявки.
-    </div>
-    {% endif %}
-    {% if current_user.role in ["hr", "admin"] %}
     <form method="post" action="/applications/create" class="row g-3">
       <input type="hidden" name="employee_id" value="{{ selected_employee.id }}">
       <input type="hidden" name="course_id" value="{{ selected_course.id }}">
@@ -146,7 +140,6 @@
         <button type="submit" class="btn btn-primary">Создать заявку</button>
       </div>
     </form>
-    {% endif %}
   </div>
 </div>
 {% endif %}

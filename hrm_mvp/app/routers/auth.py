@@ -46,7 +46,9 @@ def login_submit(
             status_code=400,
         )
 
+    request.session.clear()
     request.session["user_id"] = user.id
+    request.session["username"] = user.username
     request.session["role"] = user.role
     return RedirectResponse(url="/applications", status_code=303)
 

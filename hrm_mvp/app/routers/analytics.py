@@ -40,7 +40,6 @@ def analytics_page(
             "avg_similarity": round(float(avg_similarity), 1),
             "status_counts": status_counts,
             "get_status_label": get_status_label,
-            "current_user": current_user,
             "active_page": "analytics",
         },
     )

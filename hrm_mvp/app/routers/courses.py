@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import models
-from app.auth import get_current_user, require_role
+from app.auth import get_current_user
 from app.db import get_db
 from app.services import create_notification
 
@@ -169,7 +169,7 @@ def course_edit_form(
     course_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     course = db.query(models.Course).filter(models.Course.id == course_id).first()
     if not course:
@@ -197,7 +197,7 @@ async def course_edit(
     competency_id: list[str] = Form(default=[]),
     target_level: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     course = db.query(models.Course).filter(models.Course.id == course_id).first()
     if not course:
@@ -282,7 +282,7 @@ def course_delete(
     course_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     course = db.query(models.Course).filter(models.Course.id == course_id).first()
     if not course:
@@ -326,7 +326,7 @@ async def course_create(
     competency_id: list[str] = Form(default=[]),
     target_level: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_role(["admin"])),
+    current_user: models.User = Depends(get_current_user),
 ):
     name = name.strip()
     description = description.strip()
