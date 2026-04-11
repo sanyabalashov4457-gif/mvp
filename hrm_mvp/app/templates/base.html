@@ -14,7 +14,6 @@
       <a class="navbar-brand d-block" href="{% if request.state.current_user %}/applications{% else %}/login{% endif %}">HRM MVP</a>
       <small class="text-white-50">Прототип контура управления обучением персонала АО «Группа Илим»</small>
     </div>
-    {% if request.state.current_user %}
     <div class="navbar-nav align-items-center">
       <a class="nav-link {% if active_page == 'employees' %}active{% endif %}" href="/employees">Сотрудники</a>
       <a class="nav-link {% if active_page == 'courses' %}active{% endif %}" href="/courses">Курсы</a>
@@ -28,12 +27,15 @@
         <span class="text-secondary bell-icon">🔔</span>
         <span class="text-white">{{ request.state.unread_notifications_count }}</span>
       </a>
+      {% if request.state.current_user %}
       <span class="nav-link text-white-50">
         {{ request.state.current_user.username }} ({{ request.state.current_role_label }})
       </span>
       <a class="nav-link text-warning" href="/logout">Выход</a>
+      {% else %}
+      <a class="nav-link text-warning" href="/login">Вход</a>
+      {% endif %}
     </div>
-    {% endif %}
   </div>
 </nav>
 
