@@ -15,8 +15,9 @@ def _embed_query(query: str) -> List[float]:
 
 
 def _distance_to_similarity(distance: float) -> float:
-    # Chroma returns distance where lower is better. Convert to [0..1] similarity.
-    normalized = max(0.0, min(1.0, 1.0 - float(distance)))
+    # For cosine space in Chroma, distance is in [0..2], lower is better.
+    # Convert to [0..1] similarity, where 1 means identical.
+    normalized = max(0.0, min(1.0, 1.0 - (float(distance) / 2.0)))
     return normalized
 
 
@@ -59,10 +60,11 @@ def retrieve(query: str, top_k: int = 3) -> List[Dict]:
 
     print(f"Found {len(chunks)} chunks")
     logger.info("Retrieved %s chunks for query: %s", len(chunks), query)
-    for idx, chunk in enumerate(chunks, start=1):
+    for idx, (chunk, distance) in enumerate(zip(chunks, distances), start=1):
         logger.info(
-            "Chunk %s | score=%.3f | page=%s | text=%s",
+            "Chunk %s | distance=%.4f | score=%.3f | page=%s | text=%s",
             idx,
+            distance,
             chunk["score"],
             chunk["page"],
             chunk["text"][:180],

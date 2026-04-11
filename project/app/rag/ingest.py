@@ -10,6 +10,7 @@ from app.utils.text_splitter import split_text
 
 
 logger = logging.getLogger(__name__)
+COLLECTION_METADATA = {"hnsw:space": "cosine"}
 
 
 def ingest_documents() -> int:
@@ -22,7 +23,10 @@ def ingest_documents() -> int:
         return 0
 
     client = PersistentClient(path=str(settings.db_dir))
-    collection = client.get_or_create_collection(name=settings.chroma_collection)
+    collection = client.get_or_create_collection(
+        name=settings.chroma_collection,
+        metadata=COLLECTION_METADATA,
+    )
     print(f"Collection name: {collection.name}")
     print(f"Before insert: {collection.count()}")
 
@@ -30,7 +34,10 @@ def ingest_documents() -> int:
     if existing:
         logger.info("Clearing existing collection items: %s", existing)
         client.delete_collection(settings.chroma_collection)
-        collection = client.get_or_create_collection(name=settings.chroma_collection)
+        collection = client.get_or_create_collection(
+            name=settings.chroma_collection,
+            metadata=COLLECTION_METADATA,
+        )
         print(f"Before insert: {collection.count()}")
 
     ids = []
