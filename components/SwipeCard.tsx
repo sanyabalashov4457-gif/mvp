@@ -11,7 +11,7 @@ import {
 } from "framer-motion";
 
 import { formatPrice } from "@/lib/format";
-import type { Item } from "@/types/item";
+import type { ItemWithStore } from "@/types/item";
 
 export type SwipeDirection = "left" | "right";
 
@@ -21,7 +21,7 @@ export type SwipeSignal = {
 };
 
 type SwipeCardProps = {
-  item: Item;
+  item: ItemWithStore;
   onSwipe: (direction: SwipeDirection) => void;
   swipeSignal?: SwipeSignal | null;
 };
@@ -114,7 +114,7 @@ export const SwipeCard = ({ item, onSwipe, swipeSignal }: SwipeCardProps) => {
     >
       <Image
         src={item.imageUrl}
-        alt={`${item.brand} ${item.title}`}
+        alt={item.imageAlt ?? `${item.brand} ${item.title}`}
         fill
         sizes="(max-width: 430px) 100vw, 430px"
         className="object-cover"
@@ -135,20 +135,24 @@ export const SwipeCard = ({ item, onSwipe, swipeSignal }: SwipeCardProps) => {
         Skip
       </motion.div>
 
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-primary/90 via-primary/45 to-transparent" />
 
       <div className="absolute inset-x-0 bottom-0 p-6 text-background">
         <span className="inline-flex items-center rounded-full border border-background/45 bg-background/15 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.15em]">
           Curated find
         </span>
-        <p className="mt-4 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-background/80">
+
+        <p className="mt-4 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-background/82">
           {item.brand}
         </p>
         <h2 className="mt-1 text-[1.8rem] font-semibold leading-tight tracking-tight">
           {item.title}
         </h2>
         <p className="mt-3 text-sm text-background/85">
-          Size {item.size} · {item.condition} · {item.city}
+          Size {item.size} · {item.condition} · {item.store.city}
+        </p>
+        <p className="mt-1 text-xs uppercase tracking-[0.12em] text-background/78">
+          {item.store.name}
         </p>
         <p className="mt-3 text-[1.8rem] font-semibold tracking-tight">
           {formatPrice(item.price, item.currency)}

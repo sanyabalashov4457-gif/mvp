@@ -5,7 +5,7 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 const STORAGE_KEY = "secondplace:favorites";
 const FAVORITES_EVENT = "secondplace:favorites-updated";
 
-const parseFavoriteIds = (value: string | null) => {
+const parseFavoriteSlugs = (value: string | null) => {
   if (!value) {
     return [] as string[];
   }
@@ -27,7 +27,7 @@ const readFavorites = () => {
     return [] as string[];
   }
 
-  return parseFavoriteIds(window.localStorage.getItem(STORAGE_KEY));
+  return parseFavoriteSlugs(window.localStorage.getItem(STORAGE_KEY));
 };
 
 const subscribeToFavorites = (callback: () => void) => {
@@ -62,12 +62,12 @@ const notifyFavoritesChange = () => {
   window.dispatchEvent(new Event(FAVORITES_EVENT));
 };
 
-const writeFavorites = (nextIds: string[]) => {
+const writeFavorites = (nextSlugs: string[]) => {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextIds));
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSlugs));
   notifyFavoritesChange();
 };
 
@@ -79,40 +79,58 @@ const useHydratedFlag = () =>
   );
 
 export const useFavorites = () => {
-  const favoriteIds = useSyncExternalStore(
+  const favoriteSlugs = useSyncExternalStore(
     subscribeToFavorites,
     readFavorites,
     () => [] as string[],
   );
   const hydrated = useHydratedFlag();
 
-  const addFavorite = useCallback((itemId: string) => {
-    const currentIds = readFavorites();
-    if (currentIds.includes(itemId)) {
+  const addFavorite = useCallback((itemSlug: string) => {
+    const currentSlugs = readFavorites();
+    if (currentSlugs.includes(itemSlug)) {
       return;
     }
 
-    writeFavorites([itemId, ...currentIds]);
+    writeFavorites([itemSlug, ...currentSlugs]);
   }, []);
 
-  const removeFavorite = useCallback((itemId: string) => {
-    const currentIds = readFavorites();
-    writeFavorites(currentIds.filter((id) => id !== itemId));
+  const removeFavorite = useCallback((itemSlug: string) => {
+    const currentSlugs = readFavorites();
+    writeFavorites(currentSlugs.filter((slug) => slug !== itemSlug));
+  }, []);
+
+  const toggleFavorite = useCallback((itemSlug: string) => {
+    const currentSlugs = readFavorites();
+    if (currentSlugs.includes(itemSlug)) {
+      writeFavorites(currentSlugs.filter((slug) => slug !== itemSlug));
+      return;
+    }
+
+    writeFavorites([itemSlug, ...currentSlugs]);
   }, []);
 
   const isFavorite = useCallback(
-    (itemId: string) => favoriteIds.includes(itemId),
-    [favoriteIds],
+    (itemSlug: string) => favoriteSlugs.includes(itemSlug),
+    [favoriteSlugs],
   );
 
   return useMemo(
     () => ({
-      favoriteIds,
+      favoriteSlugs,
       hydrated,
       addFavorite,
       removeFavorite,
+      toggleFavorite,
       isFavorite,
     }),
-    [favoriteIds, hydrated, addFavorite, removeFavorite, isFavorite],
+    [
+      favoriteSlugs,
+      hydrated,
+      addFavorite,
+      removeFavorite,
+      toggleFavorite,
+      isFavorite,
+    ],
   );
 };

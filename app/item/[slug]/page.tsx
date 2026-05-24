@@ -6,16 +6,17 @@ import { ArrowLeft } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 import { ItemActions } from "@/components/ItemActions";
-import { getItemById } from "@/data/items";
 import { formatPrice } from "@/lib/format";
+import { mapItemWithStore } from "@/lib/mappers";
+import { prisma } from "@/lib/prisma";
 
 type ItemPageProps = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateMetadata({ params }: ItemPageProps): Promise<Metadata> {
-  const { id } = await params;
-  const item = getItemById(id);
+  const { slug } = await params;
+  const item = await prisma.item.findUnique({ where: { slug }, include: { store: true } });
 
   return {
     title: item ? `${item.brand} ${item.title} · SecondPlace` : "Item · SecondPlace",
@@ -25,21 +26,36 @@ export async function generateMetadata({ params }: ItemPageProps): Promise<Metad
 }
 
 export default async function ItemPage({ params }: ItemPageProps) {
-  const { id } = await params;
-  const item = getItemById(id);
+  const { slug } = await params;
+  const prismaItem = await prisma.item.findUnique({
+    where: { slug },
+    include: { store: true },
+  });
 
-  if (!item) {
+  if (!prismaItem) {
     notFound();
   }
 
+  const item = mapItemWithStore(prismaItem);
+
   const metadataRows = [
+    { label: "Store", value: item.store.name },
+    {
+      label: "City",
+      value: item.store.area
+        ? `${item.store.city}, ${item.store.area}`
+        : item.store.city,
+    },
     { label: "Size", value: item.size },
     { label: "Condition", value: item.condition },
-    { label: "City", value: item.city },
-    { label: "Store", value: item.storeName },
     { label: "Material", value: item.material ?? "Not specified" },
     { label: "Color", value: item.color ?? "Not specified" },
-    { label: "Category", value: item.category },
+    { label: "Era", value: item.era ?? "Not specified" },
+    { label: "Fit", value: item.fit ?? "Not specified" },
+    {
+      label: "Measurements",
+      value: item.measurements ?? "Not specified",
+    },
   ];
 
   return (
@@ -48,7 +64,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
         <div className="relative aspect-[3/4] overflow-hidden rounded-b-[34px] border-b border-border">
           <Image
             src={item.imageUrl}
-            alt={`${item.brand} ${item.title}`}
+            alt={item.imageAlt ?? `${item.brand} ${item.title}`}
             fill
             sizes="(max-width: 430px) 100vw, 430px"
             className="object-cover"
@@ -89,12 +105,19 @@ export default async function ItemPage({ params }: ItemPageProps) {
           ))}
         </dl>
 
+        {item.curatorNote ? (
+          <div className="rounded-3xl border border-border bg-card px-4 py-4">
+            <h2 className="text-xs uppercase tracking-[0.12em] text-muted">Curator note</h2>
+            <p className="mt-2 text-sm leading-relaxed text-primary">{item.curatorNote}</p>
+          </div>
+        ) : null}
+
         <div>
           <h2 className="text-xs uppercase tracking-[0.12em] text-muted">Description</h2>
           <p className="mt-2 text-sm leading-relaxed text-primary">{item.description}</p>
         </div>
 
-        <ItemActions itemId={item.id} />
+        <ItemActions itemId={item.id} itemSlug={item.slug} />
       </section>
     </AppShell>
   );

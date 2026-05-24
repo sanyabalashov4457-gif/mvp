@@ -1,0 +1,137 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Heart } from "lucide-react";
+
+import { EmptyState } from "@/components/EmptyState";
+import { ItemCard } from "@/components/ItemCard";
+import { useFavorites } from "@/hooks/useFavorites";
+import type { ItemWithStore } from "@/types/item";
+
+type ItemsApiResponse = {
+  success: boolean;
+  data: ItemWithStore[] | null;
+  error: string | null;
+};
+
+const FavoritesLoading = () => (
+  <section className="grid grid-cols-2 gap-3" aria-label="Loading saved items">
+    {Array.from({ length: 4 }).map((_, index) => (
+      <div
+        key={index}
+        className="overflow-hidden rounded-3xl border border-border bg-card"
+      >
+        <div className="aspect-[3/4] animate-pulse bg-primary/8" />
+        <div className="space-y-2 p-3.5">
+          <div className="h-2.5 w-16 animate-pulse rounded-full bg-primary/10" />
+          <div className="h-3.5 w-24 animate-pulse rounded-full bg-primary/10" />
+          <div className="h-3.5 w-20 animate-pulse rounded-full bg-primary/10" />
+        </div>
+      </div>
+    ))}
+  </section>
+);
+
+export const FavoritesClient = () => {
+  const { favoriteSlugs, hydrated, removeFavorite } = useFavorites();
+  const [items, setItems] = useState<ItemWithStore[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hydrated || favoriteSlugs.length === 0) {
+      setItems([]);
+      setErrorMessage(null);
+      return;
+    }
+
+    const loadFavoriteItems = async () => {
+      setIsLoading(true);
+      setErrorMessage(null);
+
+      try {
+        const query = encodeURIComponent(favoriteSlugs.join(","));
+        const response = await fetch(`/api/items?status=ALL&slugs=${query}`, {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        const payload = (await response.json()) as ItemsApiResponse;
+
+        if (!response.ok || !payload.success || !payload.data) {
+          throw new Error(payload.error ?? "Failed to load saved pieces.");
+        }
+
+        const itemsBySlug = new Map(payload.data.map((item) => [item.slug, item]));
+        const orderedItems = favoriteSlugs
+          .map((slug) => itemsBySlug.get(slug))
+          .filter((item): item is ItemWithStore => Boolean(item));
+
+        setItems(orderedItems);
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error ? error.message : "Failed to load saved pieces.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadFavoriteItems();
+  }, [favoriteSlugs, hydrated]);
+
+  const hasFavorites = useMemo(() => favoriteSlugs.length > 0, [favoriteSlugs]);
+
+  if (!hydrated) {
+    return <FavoritesLoading />;
+  }
+
+  if (!hasFavorites) {
+    return (
+      <EmptyState
+        icon={<Heart className="h-9 w-9" />}
+        title="No saved pieces yet"
+        description="Swipe right on items you love."
+      />
+    );
+  }
+
+  if (isLoading) {
+    return <FavoritesLoading />;
+  }
+
+  if (errorMessage) {
+    return (
+      <EmptyState
+        title="Could not load saved finds"
+        description={errorMessage}
+      />
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <EmptyState
+        icon={<Heart className="h-9 w-9" />}
+        title="No saved pieces yet"
+        description="Swipe right on items you love."
+      />
+    );
+  }
+
+  return (
+    <motion.section
+      layout
+      className="grid grid-cols-2 gap-3"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <AnimatePresence>
+        {items.map((item) => (
+          <ItemCard key={item.id} item={item} onRemove={removeFavorite} />
+        ))}
+      </AnimatePresence>
+    </motion.section>
+  );
+};

@@ -11,7 +11,7 @@ type ActionButtonsProps = {
 };
 
 const baseButtonClassName =
-  "flex items-center justify-center rounded-full border border-border bg-card text-primary shadow-[0_10px_24px_rgba(61,49,49,0.08)]";
+  "flex items-center justify-center rounded-full border border-border bg-card text-primary shadow-[0_10px_24px_rgba(61,49,49,0.08)] transition-colors hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-60";
 
 export const ActionButtons = ({
   onSkip,

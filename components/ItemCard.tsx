@@ -6,11 +6,11 @@ import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { formatPrice } from "@/lib/format";
-import type { Item } from "@/types/item";
+import type { ItemWithStore } from "@/types/item";
 
 type ItemCardProps = {
-  item: Item;
-  onRemove: (itemId: string) => void;
+  item: ItemWithStore;
+  onRemove: (itemSlug: string) => void;
 };
 
 export const ItemCard = ({ item, onRemove }: ItemCardProps) => {
@@ -23,11 +23,11 @@ export const ItemCard = ({ item, onRemove }: ItemCardProps) => {
       transition={{ type: "spring", stiffness: 220, damping: 24 }}
       className="group relative overflow-hidden rounded-3xl border border-border bg-card"
     >
-      <Link href={`/item/${item.id}`} className="block">
+      <Link href={`/item/${item.slug}`} className="block">
         <div className="relative aspect-[3/4] overflow-hidden">
           <Image
             src={item.imageUrl}
-            alt={`${item.brand} ${item.title}`}
+            alt={item.imageAlt ?? `${item.brand} ${item.title}`}
             fill
             sizes="(max-width: 430px) 50vw, 200px"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -40,7 +40,9 @@ export const ItemCard = ({ item, onRemove }: ItemCardProps) => {
           <h3 className="line-clamp-2 text-sm font-medium leading-snug text-primary">
             {item.title}
           </h3>
-          <p className="text-xs text-muted">Size {item.size}</p>
+          <p className="text-xs text-muted">
+            Size {item.size} · {item.store.city}
+          </p>
           <p className="pt-1 text-sm font-semibold text-primary">
             {formatPrice(item.price, item.currency)}
           </p>
@@ -50,8 +52,8 @@ export const ItemCard = ({ item, onRemove }: ItemCardProps) => {
       <button
         type="button"
         aria-label="Remove from favorites"
-        onClick={() => onRemove(item.id)}
-        className="absolute right-3 top-3 rounded-full border border-background/60 bg-background/88 p-2 text-primary shadow-sm backdrop-blur"
+        onClick={() => onRemove(item.slug)}
+        className="absolute right-3 top-3 rounded-full border border-background/60 bg-background/88 p-2 text-primary shadow-sm backdrop-blur transition-colors hover:bg-background"
       >
         <Heart className="h-4 w-4 fill-primary text-primary" />
       </button>

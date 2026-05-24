@@ -37,7 +37,9 @@ export const BottomNav = () => {
                 href={item.href}
                 className={cn(
                   "flex flex-col items-center justify-center rounded-2xl py-2 text-xs font-medium transition-colors",
-                  isActive ? "text-primary" : "text-muted",
+                  isActive
+                    ? "bg-card text-primary shadow-[0_6px_20px_rgba(61,49,49,0.08)]"
+                    : "text-muted hover:text-primary",
                 )}
               >
                 <Icon className="mb-1 h-[1.05rem] w-[1.05rem]" />

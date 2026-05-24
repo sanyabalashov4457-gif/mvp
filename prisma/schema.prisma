@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ItemStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+enum ReservationStatus {
+  NEW
+  CONTACTED
+  CANCELLED
+  COMPLETED
+}
+
+model Store {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  city        String
+  area        String?
+  description String?
+  story       String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  items       Item[]
+}
+
+model Item {
+  id           String        @id @default(cuid())
+  slug         String        @unique
+  title        String
+  brand        String
+  category     String
+  size         String
+  condition    String
+  price        Int
+  currency     String        @default("₽")
+  imageUrl     String
+  imageAlt     String?
+  description  String
+  material     String?
+  color        String?
+  era          String?
+  fit          String?
+  measurements String?
+  curatorNote  String?
+  status       ItemStatus    @default(AVAILABLE)
+  isFeatured   Boolean       @default(false)
+  storeId      String
+  store        Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([storeId])
+  @@index([status])
+  @@index([category])
+}
+
+model Reservation {
+  id           String            @id @default(cuid())
+  itemId       String
+  item         Item              @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  customerName String?
+  contact      String?
+  message      String?
+  status       ReservationStatus @default(NEW)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([itemId])
+  @@index([status])
+}
