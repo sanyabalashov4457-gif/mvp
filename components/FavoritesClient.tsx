@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Heart } from "lucide-react";
 
@@ -41,10 +41,10 @@ export const FavoritesClient = () => {
 
   useEffect(() => {
     if (!hydrated || favoriteSlugs.length === 0) {
-      setItems([]);
-      setErrorMessage(null);
       return;
     }
+
+    let cancelled = false;
 
     const loadFavoriteItems = async () => {
       setIsLoading(true);
@@ -68,20 +68,30 @@ export const FavoritesClient = () => {
           .map((slug) => itemsBySlug.get(slug))
           .filter((item): item is ItemWithStore => Boolean(item));
 
-        setItems(orderedItems);
+        if (!cancelled) {
+          setItems(orderedItems);
+        }
       } catch (error) {
-        setErrorMessage(
-          error instanceof Error ? error.message : "Failed to load saved pieces.",
-        );
+        if (!cancelled) {
+          setErrorMessage(
+            error instanceof Error ? error.message : "Failed to load saved pieces.",
+          );
+        }
       } finally {
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
     void loadFavoriteItems();
+
+    return () => {
+      cancelled = true;
+    };
   }, [favoriteSlugs, hydrated]);
 
-  const hasFavorites = useMemo(() => favoriteSlugs.length > 0, [favoriteSlugs]);
+  const hasFavorites = favoriteSlugs.length > 0;
 
   if (!hydrated) {
     return <FavoritesLoading />;

@@ -1,6 +1,7 @@
 import { ItemStatus, PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+});
 
 type StoreSeed = {
   slug: string;
@@ -543,6 +544,11 @@ const items: ItemSeed[] = [
   },
 ];
 
+const getItemData = (item: ItemSeed): Omit<ItemSeed, "storeSlug"> =>
+  Object.fromEntries(
+    Object.entries(item).filter(([key]) => key !== "storeSlug"),
+  ) as Omit<ItemSeed, "storeSlug">;
+
 async function main() {
   await prisma.reservation.deleteMany();
   await prisma.item.deleteMany();
@@ -562,7 +568,7 @@ async function main() {
       throw new Error(`Store with slug ${item.storeSlug} was not created.`);
     }
 
-    const { storeSlug, ...itemData } = item;
+    const itemData = getItemData(item);
 
     await prisma.item.create({
       data: {
