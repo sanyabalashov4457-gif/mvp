@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   animate,
@@ -37,48 +37,54 @@ export const SwipeCard = ({ item, onSwipe, swipeSignal }: SwipeCardProps) => {
   const inFlight = useRef(false);
   const lastSignalToken = useRef<number | null>(null);
 
-  const flyAway = async (direction: SwipeDirection) => {
-    if (inFlight.current) {
-      return;
-    }
+  const flyAway = useCallback(
+    async (direction: SwipeDirection) => {
+      if (inFlight.current) {
+        return;
+      }
 
-    inFlight.current = true;
+      inFlight.current = true;
 
-    const flyDistance =
-      (typeof window !== "undefined" ? window.innerWidth : 390) + 320;
+      const flyDistance =
+        (typeof window !== "undefined" ? window.innerWidth : 390) + 320;
 
-    await animate(x, direction === "right" ? flyDistance : -flyDistance, {
-      type: "spring",
-      stiffness: 220,
-      damping: 28,
-    });
+      await animate(x, direction === "right" ? flyDistance : -flyDistance, {
+        type: "spring",
+        stiffness: 220,
+        damping: 28,
+      });
 
-    onSwipe(direction);
-  };
+      onSwipe(direction);
+    },
+    [onSwipe, x],
+  );
 
-  const returnToCenter = (info: PanInfo) => {
-    if (
-      info.offset.x > SWIPE_THRESHOLD ||
-      info.velocity.x > VELOCITY_THRESHOLD
-    ) {
-      void flyAway("right");
-      return;
-    }
+  const returnToCenter = useCallback(
+    (info: PanInfo) => {
+      if (
+        info.offset.x > SWIPE_THRESHOLD ||
+        info.velocity.x > VELOCITY_THRESHOLD
+      ) {
+        void flyAway("right");
+        return;
+      }
 
-    if (
-      info.offset.x < -SWIPE_THRESHOLD ||
-      info.velocity.x < -VELOCITY_THRESHOLD
-    ) {
-      void flyAway("left");
-      return;
-    }
+      if (
+        info.offset.x < -SWIPE_THRESHOLD ||
+        info.velocity.x < -VELOCITY_THRESHOLD
+      ) {
+        void flyAway("left");
+        return;
+      }
 
-    void animate(x, 0, {
-      type: "spring",
-      stiffness: 320,
-      damping: 26,
-    });
-  };
+      void animate(x, 0, {
+        type: "spring",
+        stiffness: 320,
+        damping: 26,
+      });
+    },
+    [flyAway, x],
+  );
 
   useEffect(() => {
     if (!swipeSignal || lastSignalToken.current === swipeSignal.token) {
@@ -87,7 +93,7 @@ export const SwipeCard = ({ item, onSwipe, swipeSignal }: SwipeCardProps) => {
 
     lastSignalToken.current = swipeSignal.token;
     void flyAway(swipeSignal.direction);
-  }, [swipeSignal]);
+  }, [swipeSignal, flyAway]);
 
   useEffect(() => {
     x.set(0);
