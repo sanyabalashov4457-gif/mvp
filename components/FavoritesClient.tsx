@@ -10,9 +10,24 @@ import { useFavorites } from "@/hooks/useFavorites";
 import type { ItemWithStore } from "@/types/item";
 
 type ItemsApiResponse = {
-  success: boolean;
-  data: ItemWithStore[] | null;
-  error: string | null;
+  success?: boolean;
+  data?: unknown;
+  error?: string | null;
+};
+
+const extractItemsFromPayload = (payload: unknown): ItemWithStore[] => {
+  if (Array.isArray(payload)) {
+    return payload as ItemWithStore[];
+  }
+
+  if (payload && typeof payload === "object") {
+    const envelope = payload as ItemsApiResponse;
+    if (Array.isArray(envelope.data)) {
+      return envelope.data as ItemWithStore[];
+    }
+  }
+
+  return [];
 };
 
 const FavoritesLoading = () => (
@@ -58,12 +73,13 @@ export const FavoritesClient = () => {
         });
 
         const payload = (await response.json()) as ItemsApiResponse;
+        const resolvedItems = extractItemsFromPayload(payload);
 
-        if (!response.ok || !payload.success || !payload.data) {
+        if (!response.ok) {
           throw new Error(payload.error ?? "Failed to load saved pieces.");
         }
 
-        const itemsBySlug = new Map(payload.data.map((item) => [item.slug, item]));
+        const itemsBySlug = new Map(resolvedItems.map((item) => [item.slug, item]));
         const orderedItems = favoriteSlugs
           .map((slug) => itemsBySlug.get(slug))
           .filter((item): item is ItemWithStore => Boolean(item));

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,19 +19,137 @@ import {
 import { useFavorites } from "@/hooks/useFavorites";
 import type { ItemWithStore } from "@/types/item";
 
-type DiscoverClientProps = {
-  items: ItemWithStore[];
+type DiscoverDiagnostics = {
+  totalItemsInDb: number;
+  availableItems: number;
+  loadError: string | null;
 };
 
-export const DiscoverClient = ({ items }: DiscoverClientProps) => {
+type ItemsApiEnvelope = {
+  success?: boolean;
+  data?: unknown;
+  error?: string | null;
+};
+
+type DiscoverClientProps = {
+  items: ItemWithStore[];
+  diagnostics: DiscoverDiagnostics;
+};
+
+const extractItemsFromPayload = (payload: unknown): ItemWithStore[] => {
+  if (Array.isArray(payload)) {
+    return payload as ItemWithStore[];
+  }
+
+  if (payload && typeof payload === "object") {
+    const envelope = payload as ItemsApiEnvelope;
+    if (Array.isArray(envelope.data)) {
+      return envelope.data as ItemWithStore[];
+    }
+  }
+
+  return [];
+};
+
+export const DiscoverClient = ({ items, diagnostics }: DiscoverClientProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swipeSignal, setSwipeSignal] = useState<SwipeSignal | null>(null);
   const [savedToastVisible, setSavedToastVisible] = useState(false);
+  const [fallbackItems, setFallbackItems] = useState<ItemWithStore[] | null>(null);
+  const [fallbackSource, setFallbackSource] = useState<
+    "server" | "api-available" | "api-all"
+  >("server");
+  const [fallbackError, setFallbackError] = useState<string | null>(null);
+
   const { addFavorite } = useFavorites();
   const router = useRouter();
 
-  const currentItem = useMemo(() => items[activeIndex], [activeIndex, items]);
-  const nextItem = useMemo(() => items[activeIndex + 1], [activeIndex, items]);
+  const discoverItems = fallbackItems ?? items;
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") {
+      return;
+    }
+
+    console.info("[Discover] Items diagnostics", {
+      serverItems: items.length,
+      totalItemsInDb: diagnostics.totalItemsInDb,
+      availableItemsInDb: diagnostics.availableItems,
+      loadError: diagnostics.loadError,
+      fallbackItems: fallbackItems?.length ?? 0,
+      fallbackSource,
+    });
+  }, [
+    diagnostics.availableItems,
+    diagnostics.loadError,
+    diagnostics.totalItemsInDb,
+    fallbackItems,
+    fallbackSource,
+    items.length,
+  ]);
+
+  useEffect(() => {
+    if (items.length > 0 || diagnostics.loadError) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadItemsFromApi = async () => {
+      try {
+        const availableResponse = await fetch("/api/items", {
+          cache: "no-store",
+        });
+        const availablePayload = (await availableResponse.json()) as ItemsApiEnvelope;
+        const availableItems = extractItemsFromPayload(availablePayload);
+
+        if (!cancelled && availableItems.length > 0) {
+          setFallbackItems(availableItems);
+          setFallbackSource("api-available");
+          return;
+        }
+
+        const allResponse = await fetch("/api/items?status=ALL", {
+          cache: "no-store",
+        });
+        const allPayload = (await allResponse.json()) as ItemsApiEnvelope;
+        const allItems = extractItemsFromPayload(allPayload);
+
+        if (!cancelled && allItems.length > 0) {
+          setFallbackItems(allItems);
+          setFallbackSource("api-all");
+          return;
+        }
+
+        if (!cancelled) {
+          setFallbackError("No items were returned by /api/items.");
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setFallbackError(
+            error instanceof Error
+              ? error.message
+              : "Failed to load items from /api/items.",
+          );
+        }
+      }
+    };
+
+    void loadItemsFromApi();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [diagnostics.loadError, items.length]);
+
+  const currentItem = useMemo(
+    () => discoverItems[activeIndex],
+    [activeIndex, discoverItems],
+  );
+  const nextItem = useMemo(
+    () => discoverItems[activeIndex + 1],
+    [activeIndex, discoverItems],
+  );
 
   const showSavedToast = () => {
     setSavedToastVisible(true);
@@ -73,6 +191,14 @@ export const DiscoverClient = ({ items }: DiscoverClientProps) => {
     router.push(`/item/${currentItem.slug}`);
   };
 
+  const emptyDescription = diagnostics.loadError
+    ? `${diagnostics.loadError} Check DATABASE_URL and Prisma connection.`
+    : fallbackError
+      ? `${fallbackError} Expected format: { success: true, data: items }.`
+      : diagnostics.totalItemsInDb > 0 && diagnostics.availableItems === 0
+        ? "All items in DB are currently not AVAILABLE. Update item status or reseed data."
+        : "New finds drop soon. Saved pieces are waiting in your archive.";
+
   return (
     <AppShell>
       <AnimatePresence>
@@ -109,6 +235,12 @@ export const DiscoverClient = ({ items }: DiscoverClientProps) => {
       <p className="mb-4 text-xs uppercase tracking-[0.12em] text-muted/80">
         Swipe through curated second-hand finds.
       </p>
+
+      {process.env.NODE_ENV === "development" ? (
+        <p className="mb-3 text-xs uppercase tracking-[0.12em] text-muted/80">
+          Debug: {discoverItems.length} items · source: {fallbackSource}
+        </p>
+      ) : null}
 
       {currentItem ? (
         <>
@@ -152,7 +284,7 @@ export const DiscoverClient = ({ items }: DiscoverClientProps) => {
         <EmptyState
           icon={<Sparkles className="h-9 w-9" />}
           title="That’s all for now"
-          description="New finds drop soon. Saved pieces are waiting in your archive."
+          description={emptyDescription}
           action={
             <Link
               href="/favorites"
