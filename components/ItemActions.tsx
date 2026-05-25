@@ -80,14 +80,14 @@ export const ItemActions = ({ itemId, itemSlug }: ItemActionsProps) => {
       const payload = (await response.json()) as ReservationResponse;
 
       if (!response.ok || !payload.success) {
-        throw new Error(payload.error ?? "Could not create reservation.");
+        throw new Error(payload.error ?? "Не удалось отправить заявку.");
       }
 
-      setFeedback("Request sent. The store will contact you soon.");
+      setFeedback("Заявка отправлена. Магазин скоро свяжется с тобой.");
       setFormValues(emptyForm);
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Could not create reservation.",
+        error instanceof Error ? error.message : "Не удалось отправить заявку.",
       );
     } finally {
       setIsSubmitting(false);
@@ -95,7 +95,7 @@ export const ItemActions = ({ itemId, itemSlug }: ItemActionsProps) => {
   };
 
   const saveButtonLabel = useMemo(
-    () => (itemSaved ? "Saved" : "Save to favorites"),
+    () => (itemSaved ? "Сохранено" : "Сохранить"),
     [itemSaved],
   );
 
@@ -107,7 +107,7 @@ export const ItemActions = ({ itemId, itemSlug }: ItemActionsProps) => {
           onClick={openModal}
           className="w-full rounded-2xl bg-primary px-5 py-4 text-sm font-semibold tracking-[0.08em] text-background transition-transform active:scale-[0.98]"
         >
-          Reserve item
+          Забронировать вещь
         </button>
         <button
           type="button"
@@ -137,21 +137,21 @@ export const ItemActions = ({ itemId, itemSlug }: ItemActionsProps) => {
               <button
                 type="button"
                 onClick={closeModal}
-                aria-label="Close reservation form"
+                aria-label="Закрыть форму бронирования"
                 className="absolute right-4 top-4 rounded-full border border-border bg-background p-2 text-muted transition-colors hover:text-primary"
               >
                 <X className="h-4 w-4" />
               </button>
 
-              <h3 className="text-lg font-semibold text-primary">Reserve this item</h3>
+              <h3 className="text-lg font-semibold text-primary">Забронировать вещь</h3>
               <p className="mt-1 text-sm text-muted">
-                Leave any contact details and the store will reach out.
+                Оставь контакт, и магазин свяжется с тобой.
               </p>
 
               <form className="mt-4 space-y-3" onSubmit={sendReservation}>
                 <label className="block">
                   <span className="mb-1.5 block text-xs uppercase tracking-[0.1em] text-muted">
-                    Name (optional)
+                    Имя (необязательно)
                   </span>
                   <input
                     value={formValues.customerName}
@@ -160,33 +160,33 @@ export const ItemActions = ({ itemId, itemSlug }: ItemActionsProps) => {
                     }
                     type="text"
                     className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-primary placeholder:text-muted/70"
-                    placeholder="Your name"
+                    placeholder="Твое имя"
                   />
                 </label>
 
                 <label className="block">
                   <span className="mb-1.5 block text-xs uppercase tracking-[0.1em] text-muted">
-                    Contact (optional)
+                    Контакт (необязательно)
                   </span>
                   <input
                     value={formValues.contact}
                     onChange={(event) => handleFieldChange("contact", event.target.value)}
                     type="text"
                     className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-primary placeholder:text-muted/70"
-                    placeholder="Telegram, phone or email"
+                    placeholder="Телеграм, телефон или email"
                   />
                 </label>
 
                 <label className="block">
                   <span className="mb-1.5 block text-xs uppercase tracking-[0.1em] text-muted">
-                    Message (optional)
+                    Сообщение (необязательно)
                   </span>
                   <textarea
                     value={formValues.message}
                     onChange={(event) => handleFieldChange("message", event.target.value)}
                     rows={3}
                     className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 text-sm text-primary placeholder:text-muted/70"
-                    placeholder="Any timing or fit questions"
+                    placeholder="Можно уточнить время или детали"
                   />
                 </label>
 
@@ -208,7 +208,7 @@ export const ItemActions = ({ itemId, itemSlug }: ItemActionsProps) => {
                   className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold tracking-[0.08em] text-background transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-                  Send request
+                  Отправить заявку
                 </button>
               </form>
             </motion.div>

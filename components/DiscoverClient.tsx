@@ -56,9 +56,6 @@ export const DiscoverClient = ({ items, diagnostics }: DiscoverClientProps) => {
   const [swipeSignal, setSwipeSignal] = useState<SwipeSignal | null>(null);
   const [savedToastVisible, setSavedToastVisible] = useState(false);
   const [fallbackItems, setFallbackItems] = useState<ItemWithStore[] | null>(null);
-  const [fallbackSource, setFallbackSource] = useState<
-    "server" | "api-available" | "api-all"
-  >("server");
   const [fallbackError, setFallbackError] = useState<string | null>(null);
 
   const { addFavorite } = useFavorites();
@@ -66,27 +63,24 @@ export const DiscoverClient = ({ items, diagnostics }: DiscoverClientProps) => {
 
   const discoverItems = fallbackItems ?? items;
 
+  const currentItem = useMemo(
+    () => discoverItems[activeIndex],
+    [activeIndex, discoverItems],
+  );
+  const nextItem = useMemo(
+    () => discoverItems[activeIndex + 1],
+    [activeIndex, discoverItems],
+  );
+
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") {
       return;
     }
 
-    console.info("[Discover] Items diagnostics", {
-      serverItems: items.length,
-      totalItemsInDb: diagnostics.totalItemsInDb,
-      availableItemsInDb: diagnostics.availableItems,
-      loadError: diagnostics.loadError,
-      fallbackItems: fallbackItems?.length ?? 0,
-      fallbackSource,
-    });
-  }, [
-    diagnostics.availableItems,
-    diagnostics.loadError,
-    diagnostics.totalItemsInDb,
-    fallbackItems,
-    fallbackSource,
-    items.length,
-  ]);
+    console.log("DiscoverClient items", discoverItems);
+    console.log("currentIndex", activeIndex);
+    console.log("currentItem", currentItem);
+  }, [activeIndex, currentItem, discoverItems]);
 
   useEffect(() => {
     if (items.length > 0 || diagnostics.loadError) {
@@ -105,7 +99,6 @@ export const DiscoverClient = ({ items, diagnostics }: DiscoverClientProps) => {
 
         if (!cancelled && availableItems.length > 0) {
           setFallbackItems(availableItems);
-          setFallbackSource("api-available");
           return;
         }
 
@@ -117,19 +110,18 @@ export const DiscoverClient = ({ items, diagnostics }: DiscoverClientProps) => {
 
         if (!cancelled && allItems.length > 0) {
           setFallbackItems(allItems);
-          setFallbackSource("api-all");
           return;
         }
 
         if (!cancelled) {
-          setFallbackError("No items were returned by /api/items.");
+          setFallbackError("Не удалось получить товары из /api/items.");
         }
       } catch (error) {
         if (!cancelled) {
           setFallbackError(
             error instanceof Error
               ? error.message
-              : "Failed to load items from /api/items.",
+              : "Не удалось загрузить товары из API.",
           );
         }
       }
@@ -141,15 +133,6 @@ export const DiscoverClient = ({ items, diagnostics }: DiscoverClientProps) => {
       cancelled = true;
     };
   }, [diagnostics.loadError, items.length]);
-
-  const currentItem = useMemo(
-    () => discoverItems[activeIndex],
-    [activeIndex, discoverItems],
-  );
-  const nextItem = useMemo(
-    () => discoverItems[activeIndex + 1],
-    [activeIndex, discoverItems],
-  );
 
   const showSavedToast = () => {
     setSavedToastVisible(true);
@@ -192,15 +175,15 @@ export const DiscoverClient = ({ items, diagnostics }: DiscoverClientProps) => {
   };
 
   const emptyDescription = diagnostics.loadError
-    ? `${diagnostics.loadError} Check DATABASE_URL and Prisma connection.`
+    ? `${diagnostics.loadError} Проверь подключение DATABASE_URL и Prisma.`
     : fallbackError
-      ? `${fallbackError} Expected format: { success: true, data: items }.`
+      ? fallbackError
       : diagnostics.totalItemsInDb > 0 && diagnostics.availableItems === 0
-        ? "All items in DB are currently not AVAILABLE. Update item status or reseed data."
-        : "New finds drop soon. Saved pieces are waiting in your archive.";
+        ? "В базе есть товары, но у них нет статуса AVAILABLE. Проверь статус в БД."
+        : "Скоро появятся новые находки. Сохраненные вещи уже ждут тебя в архиве.";
 
   return (
-    <AppShell>
+    <AppShell contentClassName="pb-36">
       <AnimatePresence>
         {savedToastVisible ? (
           <motion.div
@@ -209,69 +192,66 @@ export const DiscoverClient = ({ items, diagnostics }: DiscoverClientProps) => {
             exit={{ opacity: 0, y: -10 }}
             className="pointer-events-none fixed left-1/2 top-5 z-50 -translate-x-1/2 rounded-full border border-border bg-background/95 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary shadow-sm backdrop-blur"
           >
-            Saved
+            Сохранено
           </motion.div>
         ) : null}
       </AnimatePresence>
 
       <Header
         title="SecondPlace"
-        subtitle="Curated second-hand finds"
+        subtitle="Винтажные находки из секонд-хендов"
         rightSlot={
           <button
             type="button"
             className="rounded-full border border-border bg-card p-2 text-muted transition-colors hover:bg-accent/20 hover:text-primary"
-            aria-label="Filters"
+            aria-label="Фильтры"
           >
             <SlidersHorizontal className="h-[1.05rem] w-[1.05rem]" />
           </button>
         }
       />
 
-      <p className="mb-1 text-sm text-muted">
-        Every piece had a first life. Find its second.
+      <p className="mb-4 text-sm leading-relaxed text-muted">
+        Каждая вещь уже прожила первую жизнь. Найди для нее вторую.
       </p>
-
-      <p className="mb-4 text-xs uppercase tracking-[0.12em] text-muted/80">
-        Swipe through curated second-hand finds.
-      </p>
-
-      {process.env.NODE_ENV === "development" ? (
-        <p className="mb-3 text-xs uppercase tracking-[0.12em] text-muted/80">
-          Debug: {discoverItems.length} items · source: {fallbackSource}
-        </p>
-      ) : null}
 
       {currentItem ? (
-        <>
-          <section className="relative h-[62vh] min-h-[480px] max-h-[640px]">
-            {nextItem ? (
-              <motion.div
-                aria-hidden
-                initial={{ scale: 0.92, opacity: 0 }}
-                animate={{ scale: 0.96, opacity: 0.6 }}
-                transition={{ type: "spring", stiffness: 220, damping: 24 }}
-                className="absolute inset-3 overflow-hidden rounded-[30px] border border-border bg-card"
-              >
-                <Image
-                  src={nextItem.imageUrl}
-                  alt=""
-                  fill
-                  sizes="(max-width: 430px) 100vw, 430px"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-primary/25" />
-                <span className="absolute bottom-4 left-4 rounded-full border border-background/60 bg-background/82 px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.12em] text-primary">
-                  One of one
-                </span>
-              </motion.div>
-            ) : null}
+        <div className="flex min-h-0 flex-1 flex-col">
+          <section
+            className="relative w-full flex-1"
+            style={{ minHeight: 420, maxHeight: 620 }}
+          >
+            <div className="relative h-full w-full">
+              {nextItem ? (
+                <motion.div
+                  aria-hidden
+                  initial={{ scale: 0.92, opacity: 0 }}
+                  animate={{ scale: 0.96, opacity: 0.6 }}
+                  transition={{ type: "spring", stiffness: 220, damping: 24 }}
+                  className="absolute inset-2 z-10 overflow-hidden rounded-[30px] border border-border bg-card"
+                >
+                  <Image
+                    src={nextItem.imageUrl}
+                    alt=""
+                    fill
+                    sizes="(max-width: 430px) 100vw, 430px"
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-primary/22" />
+                  <span className="absolute bottom-4 left-4 rounded-full border border-background/60 bg-background/82 px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.12em] text-primary">
+                    Единственный экземпляр
+                  </span>
+                </motion.div>
+              ) : null}
 
-            <SwipeCard
-              item={currentItem}
-              onSwipe={handleSwipe}
-              swipeSignal={swipeSignal}
-            />
+              <div className="absolute inset-0 z-20">
+                <SwipeCard
+                  item={currentItem}
+                  onSwipe={handleSwipe}
+                  swipeSignal={swipeSignal}
+                />
+              </div>
+            </div>
           </section>
 
           <ActionButtons
@@ -279,18 +259,18 @@ export const DiscoverClient = ({ items, diagnostics }: DiscoverClientProps) => {
             onSave={() => requestSwipe("right")}
             onDetails={openCurrentItem}
           />
-        </>
+        </div>
       ) : (
         <EmptyState
           icon={<Sparkles className="h-9 w-9" />}
-          title="That’s all for now"
+          title="Пока это все"
           description={emptyDescription}
           action={
             <Link
               href="/favorites"
               className="inline-flex items-center rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-accent/20"
             >
-              View saved pieces
+              Открыть сохраненные
             </Link>
           }
         />

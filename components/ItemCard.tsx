@@ -41,7 +41,7 @@ export const ItemCard = ({ item, onRemove }: ItemCardProps) => {
             {item.title}
           </h3>
           <p className="text-xs text-muted">
-            Size {item.size} · {item.store.city}
+            Размер {item.size} · {item.store.city}
           </p>
           <p className="pt-1 text-sm font-semibold text-primary">
             {formatPrice(item.price, item.currency)}
@@ -51,7 +51,7 @@ export const ItemCard = ({ item, onRemove }: ItemCardProps) => {
 
       <button
         type="button"
-        aria-label="Remove from favorites"
+        aria-label="Убрать из сохраненных"
         onClick={() => onRemove(item.slug)}
         className="absolute right-3 top-3 rounded-full border border-background/60 bg-background/88 p-2 text-primary shadow-sm backdrop-blur transition-colors hover:bg-background"
       >

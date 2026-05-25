@@ -31,7 +31,7 @@ const extractItemsFromPayload = (payload: unknown): ItemWithStore[] => {
 };
 
 const FavoritesLoading = () => (
-  <section className="grid grid-cols-2 gap-3" aria-label="Loading saved items">
+  <section className="grid grid-cols-2 gap-3" aria-label="Загрузка сохраненных вещей">
     {Array.from({ length: 4 }).map((_, index) => (
       <div
         key={index}
@@ -76,7 +76,7 @@ export const FavoritesClient = () => {
         const resolvedItems = extractItemsFromPayload(payload);
 
         if (!response.ok) {
-          throw new Error(payload.error ?? "Failed to load saved pieces.");
+          throw new Error(payload.error ?? "Не удалось загрузить сохраненные вещи.");
         }
 
         const itemsBySlug = new Map(resolvedItems.map((item) => [item.slug, item]));
@@ -90,7 +90,7 @@ export const FavoritesClient = () => {
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(
-            error instanceof Error ? error.message : "Failed to load saved pieces.",
+            error instanceof Error ? error.message : "Не удалось загрузить сохраненные вещи.",
           );
         }
       } finally {
@@ -117,8 +117,8 @@ export const FavoritesClient = () => {
     return (
       <EmptyState
         icon={<Heart className="h-9 w-9" />}
-        title="No saved pieces yet"
-        description="Swipe right on items you love."
+        title="Пока ничего не сохранено"
+        description="Свайпай вправо вещи, которые понравились."
       />
     );
   }
@@ -129,10 +129,7 @@ export const FavoritesClient = () => {
 
   if (errorMessage) {
     return (
-      <EmptyState
-        title="Could not load saved finds"
-        description={errorMessage}
-      />
+      <EmptyState title="Не удалось открыть сохраненные" description={errorMessage} />
     );
   }
 
@@ -140,8 +137,8 @@ export const FavoritesClient = () => {
     return (
       <EmptyState
         icon={<Heart className="h-9 w-9" />}
-        title="No saved pieces yet"
-        description="Swipe right on items you love."
+        title="Пока ничего не сохранено"
+        description="Свайпай вправо вещи, которые понравились."
       />
     );
   }

@@ -11,6 +11,7 @@ import {
 } from "framer-motion";
 
 import { formatPrice } from "@/lib/format";
+import { getConditionLabel } from "@/lib/item-labels";
 import type { ItemWithStore } from "@/types/item";
 
 export type SwipeDirection = "left" | "right";
@@ -105,9 +106,9 @@ export const SwipeCard = ({ item, onSwipe, swipeSignal }: SwipeCardProps) => {
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.9}
-      className="relative h-full w-full overflow-hidden rounded-[32px] border border-border bg-card shadow-[0_26px_52px_rgba(61,49,49,0.14)]"
+      className="relative z-20 h-full w-full overflow-hidden rounded-[32px] border border-border bg-card shadow-[0_26px_52px_rgba(61,49,49,0.14)]"
       style={{ x, rotate }}
-      initial={{ y: 30, opacity: 0, scale: 0.96 }}
+      initial={{ y: 24, opacity: 0, scale: 0.97 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 220, damping: 24 }}
       onDragEnd={(_, info) => returnToCenter(info)}
@@ -125,21 +126,21 @@ export const SwipeCard = ({ item, onSwipe, swipeSignal }: SwipeCardProps) => {
         style={{ opacity: saveOpacity }}
         className="absolute left-4 top-4 rounded-full border border-primary/30 bg-background/85 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-primary"
       >
-        Save
+        Сохранить
       </motion.div>
 
       <motion.div
         style={{ opacity: skipOpacity }}
         className="absolute right-4 top-4 rounded-full border border-primary/30 bg-background/85 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-primary"
       >
-        Skip
+        Пропустить
       </motion.div>
 
       <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-primary/90 via-primary/45 to-transparent" />
 
       <div className="absolute inset-x-0 bottom-0 p-6 text-background">
         <span className="inline-flex items-center rounded-full border border-background/45 bg-background/15 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.15em]">
-          Curated find
+          Отобранная находка
         </span>
 
         <p className="mt-4 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-background/82">
@@ -149,7 +150,7 @@ export const SwipeCard = ({ item, onSwipe, swipeSignal }: SwipeCardProps) => {
           {item.title}
         </h2>
         <p className="mt-3 text-sm text-background/85">
-          Size {item.size} · {item.condition} · {item.store.city}
+          Размер {item.size} · {getConditionLabel(item.condition)} · {item.store.city}
         </p>
         <p className="mt-1 text-xs uppercase tracking-[0.12em] text-background/78">
           {item.store.name}

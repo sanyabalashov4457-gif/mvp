@@ -8,8 +8,8 @@ export default function FavoritesPage() {
   return (
     <AppShell>
       <Header
-        title="Saved finds"
-        subtitle="Pieces you liked enough to give a second life."
+        title="Сохраненные находки"
+        subtitle="Вещи, которым ты захотел дать вторую жизнь."
       />
       <FavoritesClient />
     </AppShell>

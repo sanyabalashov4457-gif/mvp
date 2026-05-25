@@ -33,12 +33,12 @@ export default async function HomePage() {
 
     if (totalItems > 0 && availableItems.length === 0) {
       console.warn(
-        "Discover has no AVAILABLE items. Check item statuses in DB and seed data.",
+        "В базе есть товары, но нет вещей со статусом AVAILABLE для Discover.",
       );
     }
   } catch (error) {
-    console.error("Failed to load discover items", error);
-    loadError = "Could not load items from database.";
+    console.error("Не удалось загрузить товары для Discover", error);
+    loadError = "Не удалось загрузить товары из базы данных.";
   }
 
   return (

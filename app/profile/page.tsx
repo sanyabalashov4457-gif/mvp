@@ -7,11 +7,11 @@ import { Header } from "@/components/Header";
 export default function ProfilePage() {
   return (
     <AppShell>
-      <Header title="Profile" subtitle="Coming soon" />
+      <Header title="Профиль" subtitle="Скоро" />
       <EmptyState
         icon={<User className="h-9 w-9" />}
-        title="Profile is in progress"
-        description="Personal cabinets, size preferences and notifications will appear here soon."
+        title="Профиль в разработке"
+        description="Персональные настройки, размеры и уведомления появятся в следующей версии."
       />
     </AppShell>
   );

@@ -14,9 +14,9 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { href: "/", label: "Discover", icon: Home },
-  { href: "/favorites", label: "Saved", icon: Bookmark },
-  { href: "/profile", label: "Profile", icon: User },
+  { href: "/", label: "Поиск", icon: Home },
+  { href: "/favorites", label: "Сохраненные", icon: Bookmark },
+  { href: "/profile", label: "Профиль", icon: User },
 ];
 
 export const BottomNav = () => {
