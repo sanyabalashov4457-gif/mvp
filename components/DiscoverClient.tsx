@@ -28,7 +28,6 @@ type DiscoverDiagnostics = {
 type ItemsApiEnvelope = {
   success?: boolean;
   data?: unknown;
-  error?: string | null;
 };
 
 type DiscoverClientProps = {
@@ -198,7 +197,7 @@ export const DiscoverClient = ({ items, diagnostics }: DiscoverClientProps) => {
       </AnimatePresence>
 
       <Header
-        title="SecondPlace"
+        title="SECONDPLACE"
         subtitle="Винтажные находки из секонд-хендов"
         rightSlot={
           <button
@@ -216,41 +215,39 @@ export const DiscoverClient = ({ items, diagnostics }: DiscoverClientProps) => {
       </p>
 
       {currentItem ? (
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div>
           <section
-            className="relative w-full flex-1"
-            style={{ minHeight: 420, maxHeight: 620 }}
+            className="relative w-full"
+            style={{ height: "min(62vh, 620px)", minHeight: 420 }}
           >
-            <div className="relative h-full w-full">
-              {nextItem ? (
-                <motion.div
-                  aria-hidden
-                  initial={{ scale: 0.92, opacity: 0 }}
-                  animate={{ scale: 0.96, opacity: 0.6 }}
-                  transition={{ type: "spring", stiffness: 220, damping: 24 }}
-                  className="absolute inset-2 z-10 overflow-hidden rounded-[30px] border border-border bg-card"
-                >
-                  <Image
-                    src={nextItem.imageUrl}
-                    alt=""
-                    fill
-                    sizes="(max-width: 430px) 100vw, 430px"
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-primary/22" />
-                  <span className="absolute bottom-4 left-4 rounded-full border border-background/60 bg-background/82 px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.12em] text-primary">
-                    Единственный экземпляр
-                  </span>
-                </motion.div>
-              ) : null}
-
-              <div className="absolute inset-0 z-20">
-                <SwipeCard
-                  item={currentItem}
-                  onSwipe={handleSwipe}
-                  swipeSignal={swipeSignal}
+            {nextItem ? (
+              <motion.div
+                aria-hidden
+                initial={{ scale: 0.92, opacity: 0 }}
+                animate={{ scale: 0.96, opacity: 0.6 }}
+                transition={{ type: "spring", stiffness: 220, damping: 24 }}
+                className="pointer-events-none absolute inset-2 z-10 overflow-hidden rounded-[30px] border border-border bg-card"
+              >
+                <Image
+                  src={nextItem.imageUrl}
+                  alt=""
+                  fill
+                  sizes="(max-width: 430px) 100vw, 430px"
+                  className="object-cover"
                 />
-              </div>
+                <div className="absolute inset-0 bg-primary/22" />
+                <span className="absolute bottom-4 left-4 rounded-full border border-background/60 bg-background/82 px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.12em] text-primary">
+                  Единственный экземпляр
+                </span>
+              </motion.div>
+            ) : null}
+
+            <div className="relative z-20 h-full">
+              <SwipeCard
+                item={currentItem}
+                onSwipe={handleSwipe}
+                swipeSignal={swipeSignal}
+              />
             </div>
           </section>
 
